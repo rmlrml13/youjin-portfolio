@@ -62,7 +62,6 @@ export default function LiveEditPopup({ field, label, type, value, saving, onSav
         {/* 헤더 */}
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1.5rem' }}>
           <div>
-            <p style={{ fontSize:'10px', letterSpacing:'0.12em', textTransform:'uppercase', color:'#888880', marginBottom:'0.2rem' }}>수정</p>
             <h3 style={{ fontFamily:'DM Serif Display, serif', fontSize:'1.2rem' }}>{label}</h3>
           </div>
           <button onClick={onClose} style={{ background:'none', border:'none', fontSize:'1.2rem', cursor:'pointer', color:'#888880' }}>✕</button>

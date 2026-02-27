@@ -84,11 +84,6 @@ const WorksGrid = forwardRef<WorksGridHandle, {}>(function WorksGrid(_, ref) {
                 ? <Image src={p.image_url} alt={p.title} fill style={{ objectFit:'cover' }} />
                 : <div className="work-thumb-placeholder">{ROMAN[i] || i + 1}</div>
               }
-              {editMode && (
-                <div className="work-edit-overlay">
-                  <span>✏ 수정</span>
-                </div>
-              )}
             </div>
             <p className="work-tag">{p.tag}</p>
             <h3 className="work-title">{p.title}</h3>
