@@ -214,12 +214,7 @@ export default function ProjectEditPanel({ project, token, onSaved, onDeleted, o
         </div>
       </div>
 
-      <style>{`
-        @keyframes slideIn {
-          from { transform: translateX(100%); }
-          to   { transform: translateX(0); }
-        }
-      `}</style>
+
     </>
   )
 }

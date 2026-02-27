@@ -25,14 +25,28 @@ export async function PUT(req: NextRequest) {
 
   const body = await req.json() as Record<string, string>
 
-  // 각 key를 개별 update — 빈 문자열도 확실하게 저장
+  // 각 key를 개별 처리:
+  // 1) 먼저 행이 있는지 확인
+  // 2) 있으면 update, 없으면 insert — 빈 문자열도 확실하게 저장
   const results = await Promise.all(
-    Object.entries(body).map(([key, value]) =>
-      supabase
+    Object.entries(body).map(async ([key, value]) => {
+      const { data: existing } = await supabase
         .from('site_config')
-        .update({ value })
+        .select('key')
         .eq('key', key)
-    )
+        .maybeSingle()
+
+      if (existing) {
+        return supabase
+          .from('site_config')
+          .update({ value })
+          .eq('key', key)
+      } else {
+        return supabase
+          .from('site_config')
+          .insert({ key, value })
+      }
+    })
   )
 
   const failed = results.find(r => r.error)

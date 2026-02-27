@@ -52,9 +52,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     // 기존 이미지 Storage에서 삭제 (Supabase URL인 경우만)
     if (existing.image_url?.includes('portfolio-images')) {
-      const oldFileName = existing.image_url.split('/').pop()
-      if (oldFileName) {
-        await supabase.storage.from('portfolio-images').remove([oldFileName])
+      // 폴더명 포함한 정확한 경로 추출 (folder/filename.ext)
+      const match = existing.image_url.match(/portfolio-images\/(.+)$/)
+      const oldPath = match?.[1]
+      if (oldPath) {
+        await supabase.storage.from('portfolio-images').remove([oldPath])
       }
     }
   }
@@ -90,9 +92,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
   // Storage 이미지도 함께 삭제
   if (existing?.image_url?.includes('portfolio-images')) {
-    const fileName = existing.image_url.split('/').pop()
-    if (fileName) {
-      await supabase.storage.from('portfolio-images').remove([fileName])
+    const match = existing.image_url.match(/portfolio-images\/(.+)$/)
+    const oldPath = match?.[1]
+    if (oldPath) {
+      await supabase.storage.from('portfolio-images').remove([oldPath])
     }
   }
 

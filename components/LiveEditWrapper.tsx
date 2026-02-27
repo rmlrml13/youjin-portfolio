@@ -11,6 +11,7 @@ interface Props {
 type PopupType = 'text' | 'textarea' | 'skills' | 'image'
 
 export default function LiveEditWrapper({ initialConfig }: Props) {
+  const [mounted, setMounted]   = useState(false)
   const [isAdmin, setIsAdmin]   = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [config, setConfig]     = useState(initialConfig)
@@ -19,6 +20,7 @@ export default function LiveEditWrapper({ initialConfig }: Props) {
   const [toast, setToast]       = useState('')
 
   useEffect(() => {
+    setMounted(true)
     if (!localStorage.getItem('yujin_token')) return
     setIsAdmin(true)
     document.body.classList.add('has-edit-bar')
@@ -122,6 +124,8 @@ export default function LiveEditWrapper({ initialConfig }: Props) {
     setTimeout(() => setToast(''), 2500)
   }
 
+  // 마운트 전에는 아무것도 렌더링하지 않아 hydration 불일치 방지
+  if (!mounted) return null
   if (!isAdmin) return null
 
   return (

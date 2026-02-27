@@ -2,7 +2,7 @@
 // components/LiveProjectEditor.tsx
 // body.live-edit-mode일 때 WorksGrid에 편집 기능을 주입
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import type { Project } from '@/lib/types'
 import type { WorksGridHandle } from './WorksGrid'
 import ProjectEditPanel from './ProjectEditPanel'

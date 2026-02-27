@@ -1,5 +1,6 @@
 // app/api/upload/route.ts
-// POST /api/upload — 단일 이미지를 Supabase Storage에 업로드하고 URL 반환
+// POST /api/upload — 이미지를 Supabase Storage에 업로드하고 URL 반환
+// Query param: ?folder=hero|about|projects (기본값: general)
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
@@ -11,13 +12,14 @@ export async function POST(req: NextRequest) {
 
   const formData  = await req.formData()
   const imageFile = formData.get('image') as File | null
+  const folder    = req.nextUrl.searchParams.get('folder') || 'general'
 
   if (!imageFile || imageFile.size === 0) {
     return NextResponse.json({ error: '이미지 파일이 없습니다' }, { status: 400 })
   }
 
   const ext      = imageFile.name.split('.').pop()
-  const fileName = `hero/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+  const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
   const buffer   = Buffer.from(await imageFile.arrayBuffer())
 
   const { error: uploadError } = await supabase.storage

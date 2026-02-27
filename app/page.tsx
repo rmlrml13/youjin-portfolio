@@ -27,6 +27,7 @@ export default async function HomePage() {
           data-edit="footer_name"
           data-label="이름"
           data-type="text"
+          suppressHydrationWarning
         >
           © {new Date().getFullYear()} {config.footer_name}. All rights reserved.
         </span>

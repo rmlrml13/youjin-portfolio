@@ -115,19 +115,6 @@ const WorksGrid = forwardRef<WorksGridHandle, {}>(function WorksGrid(_, ref) {
           </div>
         )}
       </div>
-
-      {/* 편집 오버레이 스타일 */}
-      <style>{`
-        .work-edit-overlay {
-          position: absolute; inset: 0;
-          background: rgba(26,26,24,0.45);
-          display: flex; align-items: center; justify-content: center;
-          opacity: 0; transition: opacity 0.2s;
-          color: #fff; font-family: 'DM Mono', monospace;
-          font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
-        }
-        .work-item:hover .work-edit-overlay { opacity: 1; }
-      `}</style>
     </section>
   )
 })

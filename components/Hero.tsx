@@ -11,7 +11,7 @@ export default function Hero({ config }: Props) {
       <section className="hero-section">
         <div className="hero-text-row site-wrapper">
           <div className="hero-left">
-            <p className="hero-index">— Portfolio {new Date().getFullYear()}</p>
+            <p className="hero-index" suppressHydrationWarning>— Portfolio {new Date().getFullYear()}</p>
             <h1
               className="hero-title editable-field"
               data-edit="hero_subtitle"
