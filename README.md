@@ -1,4 +1,4 @@
-# Yujin Portfolio
+# Youjin Portfolio
 
 Next.js 14 (App Router) + Supabase 기반 포트폴리오 + 라이브 편집 CMS
 
@@ -80,18 +80,18 @@ create table site_config (
 
 -- 기본 설정값 입력
 insert into site_config (key, value) values
-  ('hero_name',         'Yujin'),
+  ('hero_name',         'Youjin'),
   ('hero_subtitle',     'Design & Art Works'),
   ('hero_desc',         'Visual designer crafting thoughtful, considered work.'),
   ('about_image_url',   ''),
   ('about_text1',       '안녕하세요. 저는 시각적 커뮤니케이션과 예술의 경계에서 작업하는 디자이너입니다.'),
   ('about_text2',       '각 프로젝트마다 클라이언트의 비전을 명확하고 아름다운 시각 언어로 번역하는 데 집중합니다.'),
   ('about_skills',      'Branding,Editorial,UI Design,Illustration,Typography,Motion,Art Direction'),
-  ('contact_email',     'hello@yujin.com'),
+  ('contact_email',     'hello@youjin.com'),
   ('contact_instagram', '#'),
   ('contact_behance',   '#'),
   ('contact_linkedin',  '#'),
-  ('footer_name',       'Yujin'),
+  ('footer_name',       'Youjin'),
   ('footer_region',     'Seoul, Korea');
 ```
 
@@ -158,7 +158,7 @@ with check (bucket_id = 'portfolio-images');
 ## 폴더 구조
 
 ```
-yujin-project/
+youjin-project/
 │
 ├── app/
 │   ├── page.tsx                # 메인 포트폴리오 (서버 컴포넌트)

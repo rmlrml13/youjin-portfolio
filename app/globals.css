@@ -26,7 +26,6 @@ body {
   font-family: 'DM Mono', monospace;
   font-size: 14px;
   line-height: 1.6;
-  cursor: none;
 }
 
 .site-wrapper {
@@ -35,22 +34,8 @@ body {
   padding: 0 var(--gap);
 }
 
-/* ── Cursor ── */
-.cursor {
-  width: 8px; height: 8px;
-  background: var(--fg);
-  border-radius: 50%;
-  position: fixed;
-  pointer-events: none;
-  z-index: 9999;
-  transform: translate(-50%, -50%);
-  transition: width 0.2s, height 0.2s, background 0.2s;
-}
-.cursor.expand {
-  width: 32px; height: 32px;
-  background: transparent;
-  border: 1px solid var(--fg);
-}
+/* ── Cursor (disabled) ── */
+.cursor { display: none; }
 
 /* ── Header — pill 형태 다크 바 ── */
 .site-header {
@@ -58,21 +43,21 @@ body {
   top: 1rem; left: 50%; right: auto;
   transform: translateX(-50%);
   z-index: 100;
-  width: calc(100% - 3rem);
-  max-width: 1280px;
+  width: min(calc(100% - 2rem), 1280px);
   background: #111111;
   border-radius: 100px;
-  padding: 0.85rem 1.5rem;
+  padding: 0.75rem 0.85rem 0.75rem 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   opacity: 0;
   animation: fadeUp 0.6s 0.1s forwards;
   transition: padding 0.3s;
+  gap: 1rem;
 }
 .site-header.scrolled {
   background: #111111;
-  padding: 0.75rem 1.5rem;
+  padding: 0.65rem 0.85rem 0.65rem 1.5rem;
 }
 .logo {
   font-family: 'DM Serif Display', serif;
@@ -83,16 +68,17 @@ body {
   color: #fff;
   letter-spacing: -0.01em;
 }
-.site-nav { display: flex; gap: 1.8rem; align-items: center; }
-.site-nav a {
+.desktop-nav { display: flex; gap: 1.4rem; align-items: center; }
+.desktop-nav a {
   color: rgba(255,255,255,0.7);
   text-decoration: none;
   font-size: 12px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+  white-space: nowrap;
   transition: color 0.2s;
 }
-.site-nav a:hover { color: #fff; }
+.desktop-nav a:hover { color: #fff; }
 .nav-cta {
   background: #fff;
   color: #111 !important;
@@ -100,10 +86,65 @@ body {
   border-radius: 100px;
   font-size: 12px !important;
   font-weight: 600;
-  letter-spacing: 0.04em !important;
+  white-space: nowrap;
   transition: background 0.2s, color 0.2s !important;
 }
 .nav-cta:hover { background: var(--accent) !important; color: #fff !important; }
+
+/* 햄버거 버튼 */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem 0.6rem;
+  margin-left: auto;
+}
+.hamburger span {
+  display: block;
+  width: 22px; height: 2px;
+  background: #fff;
+  border-radius: 2px;
+  transition: transform 0.25s, opacity 0.25s;
+  transform-origin: center;
+}
+.hamburger span.open:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger span.open:nth-child(2) { opacity: 0; }
+.hamburger span.open:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* 모바일 드롭다운 */
+.mobile-menu {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 99;
+  background: #111;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  animation: fadeUp 0.2s ease;
+}
+.mobile-menu a {
+  color: rgba(255,255,255,0.8);
+  text-decoration: none;
+  font-size: 1.4rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+.mobile-menu a:hover { color: #fff; }
+.mobile-cta {
+  background: #fff !important;
+  color: #111 !important;
+  padding: 0.75rem 2rem !important;
+  border-radius: 100px;
+  font-size: 1rem !important;
+  font-weight: 600;
+  margin-top: 1rem;
+}
 
 /* ── Hero — 다크 배경 + 왼쪽 텍스트 ── */
 .hero-section {
@@ -541,9 +582,9 @@ body.live-edit-mode .editable-field:hover::after { opacity: 1; }
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
-  body { cursor: auto; }
-  .cursor { display: none; }
-  .site-header { width: calc(100% - 2rem); padding: 0.7rem 1.2rem; }
+  .site-header { padding: 0.6rem 0.5rem 0.6rem 1.2rem; }
+  .desktop-nav { display: none; }
+  .hamburger { display: flex; }
   .hero-text-row { grid-template-columns: 1fr; gap: 3rem; padding: 8rem 0 4rem; }
   .hero-right { display: none; }
   .works-grid { grid-template-columns: 1fr; }

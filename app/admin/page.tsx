@@ -27,19 +27,18 @@ export default function AdminPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    const saved = localStorage.getItem('yujin_token')
+    const saved = localStorage.getItem('youjin_token')
     if (!saved) return
 
     // 토큰 만료 여부 확인 (JWT payload의 exp 체크)
     try {
       const payload = JSON.parse(atob(saved.split('.')[1]))
       if (payload.exp * 1000 < Date.now()) {
-        // 만료됐으면 즉시 제거
-        localStorage.removeItem('yujin_token')
+        localStorage.removeItem('youjin_token')
         return
       }
     } catch {
-      localStorage.removeItem('yujin_token')
+      localStorage.removeItem('youjin_token')
       return
     }
 
@@ -56,13 +55,13 @@ export default function AdminPage() {
     })
     const data = await res.json()
     if (!res.ok) { setLoginErr(data.error); return }
-    localStorage.setItem('yujin_token', data.token)
+    localStorage.setItem('youjin_token', data.token)
     setToken(data.token)
     fetchProjects()
   }
 
   function doLogout() {
-    localStorage.removeItem('yujin_token')
+    localStorage.removeItem('youjin_token')
     setToken(''); setProjects([])
   }
 
@@ -129,7 +128,7 @@ export default function AdminPage() {
     <div style={s.loginWrap}>
       <div style={s.loginBox}>
         <h1 style={s.loginTitle}>Admin</h1>
-        <p style={s.loginSub}>Yujin Portfolio CMS</p>
+        <p style={s.loginSub}>Youjin Portfolio CMS</p>
         <label style={s.label}>아이디</label>
         <input style={s.input} value={username} onChange={e => setUsername(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && doLogin()} placeholder="admin" autoComplete="username" />
@@ -148,7 +147,7 @@ export default function AdminPage() {
 
       {/* Header */}
       <div style={s.adminHeader}>
-        <span style={s.adminLogo}>Yujin CMS</span>
+        <span style={s.adminLogo}>Youjin CMS</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
           <a href="/" target="_blank" style={s.adminHeaderLink}>포트폴리오</a>
           <a href="/?edit=1" target="_blank" style={s.liveEditBtn}>

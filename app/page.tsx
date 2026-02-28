@@ -1,5 +1,4 @@
 // app/page.tsx
-import Cursor          from '@/components/Cursor'
 import Header          from '@/components/Header'
 import Hero            from '@/components/Hero'
 import About           from '@/components/About'
@@ -15,7 +14,6 @@ export default async function HomePage() {
 
   return (
     <>
-      <Cursor />
       <Header name={config.hero_name} />
       <Hero config={config} />
 

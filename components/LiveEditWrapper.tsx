@@ -22,18 +22,18 @@ export default function LiveEditWrapper({ initialConfig }: Props) {
   useEffect(() => {
     setMounted(true)
 
-    const saved = localStorage.getItem('yujin_token')
+    const saved = localStorage.getItem('youjin_token')
     if (!saved) return
 
     // 토큰 만료 여부 확인
     try {
       const payload = JSON.parse(atob(saved.split('.')[1]))
       if (payload.exp * 1000 < Date.now()) {
-        localStorage.removeItem('yujin_token')
+        localStorage.removeItem('youjin_token')
         return
       }
     } catch {
-      localStorage.removeItem('yujin_token')
+      localStorage.removeItem('youjin_token')
       return
     }
 
@@ -96,7 +96,7 @@ export default function LiveEditWrapper({ initialConfig }: Props) {
 
   const saveField = useCallback(async (field: string, value: string) => {
     setSaving(true)
-    const t   = localStorage.getItem('yujin_token')
+    const t   = localStorage.getItem('youjin_token')
     const res = await fetch('/api/config', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
@@ -113,7 +113,7 @@ export default function LiveEditWrapper({ initialConfig }: Props) {
 
   const saveImage = useCallback(async (field: string, file: File) => {
     setSaving(true)
-    const t  = localStorage.getItem('yujin_token')
+    const t  = localStorage.getItem('youjin_token')
     const fd = new FormData()
     fd.append('image', file)
     const uploadRes  = await fetch('/api/upload', { method:'POST', headers:{ Authorization:`Bearer ${t}` }, body:fd })

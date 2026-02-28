@@ -19,7 +19,7 @@ export default function LiveProjectEditor({ gridRef }: Props) {
 
   // body 클래스 변화 감지 → editMode 동기화
   useEffect(() => {
-    setToken(localStorage.getItem('yujin_token') ?? '')
+    setToken(localStorage.getItem('youjin_token') ?? '')
 
     const observer = new MutationObserver(() => {
       setEditMode(document.body.classList.contains('live-edit-mode'))
