@@ -21,7 +21,22 @@ export default function LiveEditWrapper({ initialConfig }: Props) {
 
   useEffect(() => {
     setMounted(true)
-    if (!localStorage.getItem('yujin_token')) return
+
+    const saved = localStorage.getItem('yujin_token')
+    if (!saved) return
+
+    // 토큰 만료 여부 확인
+    try {
+      const payload = JSON.parse(atob(saved.split('.')[1]))
+      if (payload.exp * 1000 < Date.now()) {
+        localStorage.removeItem('yujin_token')
+        return
+      }
+    } catch {
+      localStorage.removeItem('yujin_token')
+      return
+    }
+
     setIsAdmin(true)
     document.body.classList.add('has-edit-bar')
     if (new URLSearchParams(window.location.search).get('edit') === '1') {

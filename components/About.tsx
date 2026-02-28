@@ -1,5 +1,4 @@
 // components/About.tsx
-import Image from 'next/image'
 import type { SiteConfig } from '@/lib/types'
 
 interface Props { config: SiteConfig }
@@ -21,7 +20,7 @@ export default function About({ config }: Props) {
           title="클릭하여 이미지 변경"
         >
           {hasImage
-            ? <Image src={config.about_image_url} alt="About" fill style={{ objectFit: 'cover' }} />
+            ? <img src={config.about_image_url} alt="About" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
             : <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center' }}>
                 <span style={{ fontSize:'11px', color:'var(--muted)', letterSpacing:'0.1em', textTransform:'uppercase' }}>+ 이미지 추가</span>
               </div>

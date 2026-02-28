@@ -26,6 +26,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '아이디 또는 비밀번호가 틀렸습니다' }, { status: 401 })
   }
 
-  const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '8h' })
+  const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '2h' })
   return NextResponse.json({ token })
 }

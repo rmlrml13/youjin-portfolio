@@ -28,7 +28,23 @@ export default function AdminPage() {
 
   useEffect(() => {
     const saved = localStorage.getItem('yujin_token')
-    if (saved) { setToken(saved); fetchProjects() }
+    if (!saved) return
+
+    // 토큰 만료 여부 확인 (JWT payload의 exp 체크)
+    try {
+      const payload = JSON.parse(atob(saved.split('.')[1]))
+      if (payload.exp * 1000 < Date.now()) {
+        // 만료됐으면 즉시 제거
+        localStorage.removeItem('yujin_token')
+        return
+      }
+    } catch {
+      localStorage.removeItem('yujin_token')
+      return
+    }
+
+    setToken(saved)
+    fetchProjects()
   }, [])
 
   async function doLogin() {
