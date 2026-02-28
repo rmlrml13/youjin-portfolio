@@ -30,9 +30,9 @@ export default function Header({ name }: Props) {
 
         {/* 데스크탑 네비 */}
         <nav className="site-nav desktop-nav">
-          <a href="#works">Works</a>
-          <a href="#about">About</a>
-          <a href="#contact">Contact</a>
+          <a href="#works">portfolio</a>
+          <a href="#about">insight</a>
+          <a href="#contact">about</a>
           <a href="#contact" className="nav-cta">상담신청</a>
         </nav>
 
