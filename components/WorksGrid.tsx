@@ -27,13 +27,9 @@ const WorksGrid = forwardRef<WorksGridHandle, {}>(function WorksGrid(_, ref) {
 
   useEffect(() => { load() }, [])
 
-  // LiveProjectEditor에서 보내는 editMode 변화 감지
   useEffect(() => {
-    const handler = (e: Event) => {
-      setEditMode((e as CustomEvent).detail.editMode)
-    }
+    const handler = (e: Event) => setEditMode((e as CustomEvent).detail.editMode)
     window.addEventListener('edit-mode-change', handler)
-    // 초기값도 body 클래스로 확인
     setEditMode(document.body.classList.contains('live-edit-mode'))
     return () => window.removeEventListener('edit-mode-change', handler)
   }, [])
@@ -44,9 +40,9 @@ const WorksGrid = forwardRef<WorksGridHandle, {}>(function WorksGrid(_, ref) {
     const observer = new IntersectionObserver(entries => {
       entries.forEach((entry, i) => {
         if (entry.isIntersecting)
-          setTimeout(() => entry.target.classList.add('visible'), i * 100)
+          setTimeout(() => entry.target.classList.add('visible'), i * 80)
       })
-    }, { threshold: 0.1 })
+    }, { threshold: 0.05 })
     gridRef.current.querySelectorAll('.work-item').forEach(el => observer.observe(el))
     return () => observer.disconnect()
   }, [projects, loading])
@@ -54,22 +50,26 @@ const WorksGrid = forwardRef<WorksGridHandle, {}>(function WorksGrid(_, ref) {
   function dispatchEdit(project: Project) {
     window.dispatchEvent(new CustomEvent('project-edit', { detail: { action: 'edit', project } }))
   }
-
   function dispatchAdd() {
     window.dispatchEvent(new CustomEvent('project-edit', { detail: { action: 'add' } }))
   }
 
   return (
     <section id="works" className="works-section">
-      <div className="section-header site-wrapper">
-        <h2 className="section-title">Selected Works</h2>
-        <span className="section-count">{String(projects.length).padStart(2, '0')} Projects</span>
+      <div className="section-header">
+        <h2 className="section-title">Recent Portfolio</h2>
       </div>
 
-      <div className="works-grid site-wrapper" ref={gridRef}>
-        {loading && <div style={{ gridColumn:'1/-1', color:'var(--muted)', padding:'2rem' }}>Loading...</div>}
+      <div className="works-grid" ref={gridRef}>
+        {loading && (
+          <div style={{ gridColumn:'1/-1', color:'var(--muted)', padding:'4rem', textAlign:'center', fontSize:'12px', letterSpacing:'0.1em' }}>
+            Loading...
+          </div>
+        )}
         {!loading && projects.length === 0 && (
-          <div style={{ gridColumn:'1/-1', color:'var(--muted)', padding:'2rem' }}>등록된 프로젝트가 없습니다.</div>
+          <div style={{ gridColumn:'1/-1', color:'var(--muted)', padding:'4rem', textAlign:'center', fontSize:'12px' }}>
+            등록된 프로젝트가 없습니다.
+          </div>
         )}
 
         {projects.map((p, i) => (
@@ -84,10 +84,14 @@ const WorksGrid = forwardRef<WorksGridHandle, {}>(function WorksGrid(_, ref) {
                 ? <Image src={p.image_url} alt={p.title} fill style={{ objectFit:'cover' }} />
                 : <div className="work-thumb-placeholder">{ROMAN[i] || i + 1}</div>
               }
+              {editMode && (
+                <div className="work-edit-overlay"><span>✏ 수정</span></div>
+              )}
             </div>
-            <p className="work-tag">{p.tag}</p>
-            <h3 className="work-title">{p.title}</h3>
-            <span className="work-year">{p.year}</span>
+            <div className="work-info">
+              <p className="work-tag">{p.tag}</p>
+              <h3 className="work-title">{p.title}</h3>
+            </div>
           </div>
         ))}
 
@@ -98,15 +102,16 @@ const WorksGrid = forwardRef<WorksGridHandle, {}>(function WorksGrid(_, ref) {
             onClick={dispatchAdd}
             style={{ cursor:'pointer', opacity:1, transform:'none' }}
           >
-            <div className="work-thumb" style={{ display:'flex', alignItems:'center', justifyContent:'center', background:'var(--border)', border:'2px dashed var(--accent)', position:'relative' }}>
+            <div className="work-thumb" style={{ display:'flex', alignItems:'center', justifyContent:'center', background:'#f0f0f0', border:'2px dashed #ccc', position:'relative' }}>
               <div style={{ textAlign:'center' }}>
-                <div style={{ fontSize:'2rem', color:'var(--accent)', lineHeight:1 }}>+</div>
-                <span style={{ fontSize:'10px', color:'var(--muted)', letterSpacing:'0.1em', textTransform:'uppercase' }}>새 프로젝트</span>
+                <div style={{ fontSize:'2rem', color:'#aaa', lineHeight:1 }}>+</div>
+                <span style={{ fontSize:'10px', color:'#aaa', letterSpacing:'0.1em', textTransform:'uppercase' }}>새 프로젝트</span>
               </div>
             </div>
-            <p className="work-tag" style={{ color:'var(--accent)' }}>추가</p>
-            <h3 className="work-title" style={{ color:'var(--muted)' }}>New Project</h3>
-            <span className="work-year">—</span>
+            <div className="work-info">
+              <p className="work-tag" style={{ color:'var(--accent)' }}>추가</p>
+              <h3 className="work-title" style={{ color:'#aaa' }}>New Project</h3>
+            </div>
           </div>
         )}
       </div>

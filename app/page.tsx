@@ -18,16 +18,31 @@ export default async function HomePage() {
       <Cursor />
       <Header name={config.hero_name} />
       <Hero config={config} />
+
+      {/* Tagline 섹션 — 흰 배경 + 중앙 대형 텍스트 */}
+      <div className="tagline-section">
+        <h2>Behind Your Victory!</h2>
+        <p
+          className="editable-field"
+          data-edit="hero_desc"
+          data-label="tagline 문구"
+          data-type="textarea"
+        >
+          {config.hero_desc}
+        </p>
+      </div>
+
       <WorksGridController />
       <About config={config} />
       <Contact config={config} />
+
       <footer className="site-footer">
         <span
+          suppressHydrationWarning
           className="editable-field"
           data-edit="footer_name"
           data-label="이름"
           data-type="text"
-          suppressHydrationWarning
         >
           © {new Date().getFullYear()} {config.footer_name}. All rights reserved.
         </span>
