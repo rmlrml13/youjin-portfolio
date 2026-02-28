@@ -1,6 +1,7 @@
 // app/api/upload/route.ts
 // POST /api/upload — 이미지를 Supabase Storage에 업로드하고 URL 반환
 // Query param: ?folder=hero|about|projects (기본값: general)
+export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'

@@ -1,7 +1,7 @@
 // app/api/projects/[id]/route.ts
 // PUT    /api/projects/:id  — 수정 (인증 필요, 이미지 재업로드 포함)
 // DELETE /api/projects/:id  — 삭제 (인증 필요)
-
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { verifyToken } from '@/lib/auth'

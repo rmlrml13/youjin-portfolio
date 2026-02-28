@@ -1,7 +1,7 @@
 // app/api/projects/route.ts
 // GET  /api/projects  — 전체 조회 (public)
 // POST /api/projects  — 추가 (인증 필요, 이미지 업로드 포함)
-
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { verifyToken } from '@/lib/auth'

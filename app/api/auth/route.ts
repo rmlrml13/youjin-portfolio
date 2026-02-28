@@ -1,6 +1,6 @@
 // app/api/auth/route.ts
 // POST /api/auth  — 관리자 로그인
-
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
