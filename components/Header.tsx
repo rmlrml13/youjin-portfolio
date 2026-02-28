@@ -16,7 +16,7 @@ export default function Header({ name }: Props) {
 
   return (
     <header className={`site-header ${scrolled ? 'scrolled' : ''}`}>
-      <Link className="logo" href="/">{name}</Link>
+      <Link className="logo" href="/">Youjin</Link>
       <nav className="site-nav">
         <a href="#works">Works</a>
         <a href="#about">About</a>
