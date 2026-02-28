@@ -5,9 +5,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
-const JWT_SECRET       = process.env.JWT_SECRET       || 'dev-secret'
+const JWT_SECRET       = process.env.JWT_SECRET       || 'yujin-portfolio-secret-change-this'
 const ADMIN_USERNAME   = process.env.ADMIN_USERNAME   || 'admin'
-const ADMIN_PASSWORD   = process.env.ADMIN_PASSWORD   || 'admin1234'
+const ADMIN_PASSWORD   = process.env.ADMIN_PASSWORD   || '12171217'
 
 export async function POST(req: NextRequest) {
   const { username, password } = await req.json()
