@@ -12,20 +12,7 @@ export default function About({ config }: Props) {
 
       <div className="about-left">
         <div className="about-label">About</div>
-        <div
-          className="about-image-wrap editable-field"
-          data-edit="about_image_url"
-          data-label="About 이미지"
-          data-type="image"
-          title="클릭하여 이미지 변경"
-        >
-          {hasImage
-            ? <img src={config.about_image_url} alt="About" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
-            : <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                <span style={{ fontSize:'11px', color:'var(--muted)', letterSpacing:'0.1em', textTransform:'uppercase' }}>+ 이미지 추가</span>
-              </div>
-          }
-        </div>
+        
       </div>
 
       <div className="about-content">
