@@ -580,6 +580,226 @@ body.live-edit-mode .editable-field:hover::after { opacity: 1; }
   to   { opacity: 1; transform: none; }
 }
 
+/* ── Nav Active ── */
+.desktop-nav a.nav-active {
+  color: #fff;
+  position: relative;
+}
+.desktop-nav a.nav-active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px; left: 0; right: 0;
+  height: 1px;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
+/* ── More Button (홈 Works 하단) ── */
+.works-more-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3.5rem var(--gap) 5rem;
+  border-top: 1px solid var(--border);
+}
+.works-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.9rem 2.4rem;
+  border: 1.5px solid var(--fg);
+  color: var(--fg);
+  text-decoration: none;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-family: 'DM Mono', monospace;
+  border-radius: 100px;
+  transition: background 0.2s, color 0.2s;
+}
+.works-more-btn:hover {
+  background: var(--fg);
+  color: var(--bg);
+}
+.works-more-arrow {
+  transition: transform 0.2s;
+}
+.works-more-btn:hover .works-more-arrow { transform: translateX(4px); }
+.works-more-count {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+/* ── Page Hero (Portfolio / Insight 상단) ── */
+.page-hero {
+  min-height: 42vh;
+  background: var(--bg-dark);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 6rem var(--gap) 4rem;
+  max-width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+.page-hero-label {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 1rem;
+}
+.page-hero-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(3.5rem, 8vw, 7rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: #fff;
+  margin-bottom: 1.5rem;
+}
+.page-hero-desc {
+  font-size: 14px;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.03em;
+  max-width: 480px;
+}
+
+/* ── Portfolio Page ── */
+.portfolio-page-section {
+  padding: 0 0 6rem;
+}
+.portfolio-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 2.5rem var(--gap) 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.portfolio-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.1rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.portfolio-filter-btn:hover {
+  border-color: var(--fg);
+  color: var(--fg);
+}
+.portfolio-filter-btn.active {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+.portfolio-filter-count {
+  background: rgba(0,0,0,0.08);
+  color: inherit;
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 100px;
+  min-width: 18px;
+  text-align: center;
+}
+.portfolio-filter-btn.active .portfolio-filter-count {
+  background: rgba(255,255,255,0.15);
+}
+.portfolio-grid-meta {
+  padding: 1rem var(--gap);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+/* ── Insight Page ── */
+.insight-section {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 4rem var(--gap) 8rem;
+}
+.insight-list {
+  display: flex;
+  flex-direction: column;
+}
+.insight-item {
+  display: grid;
+  grid-template-columns: 200px 1fr 60px;
+  gap: 2rem;
+  align-items: start;
+  padding: 2.5rem 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
+}
+.insight-item:first-child { border-top: 1px solid var(--border); }
+.insight-item:hover { background: #fafafa; }
+.insight-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.2rem;
+}
+.insight-category {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+.insight-date {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+.insight-body { display: flex; flex-direction: column; gap: 0.6rem; }
+.insight-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--fg);
+  transition: color 0.2s;
+}
+.insight-item:hover .insight-title { color: var(--accent); }
+.insight-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.8;
+  max-width: 560px;
+}
+.insight-read {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 0.5rem;
+}
+.insight-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2.5rem;
+  color: var(--border);
+  font-weight: 700;
+  text-align: right;
+  line-height: 1;
+  padding-top: 0.2rem;
+  transition: color 0.2s;
+}
+.insight-item:hover .insight-num { color: #ddd; }
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .site-header { padding: 0.6rem 0.5rem 0.6rem 1.2rem; }
@@ -595,4 +815,14 @@ body.live-edit-mode .editable-field:hover::after { opacity: 1; }
   .contact-section { flex-direction: column; gap: 2rem; align-items: flex-start; }
   .contact-links { align-items: flex-start; }
   .tagline-section { padding: 6rem var(--gap); }
+
+  /* Portfolio / Insight 반응형 */
+  .page-hero { padding: 5rem var(--gap) 3rem; }
+  .portfolio-filter-bar { padding: 1.5rem var(--gap) 1rem; }
+  .insight-item {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  .insight-num { display: none; }
+  .works-more-btn { padding: 0.8rem 1.8rem; font-size: 11px; }
 }

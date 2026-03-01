@@ -2,15 +2,24 @@
 // components/WorksGrid.tsx
 import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import type { Project } from '@/lib/types'
 
 const ROMAN = ['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ','Ⅶ','Ⅷ','Ⅸ','Ⅹ']
+
+// 홈에서 보여줄 최대 프로젝트 수
+const HOME_LIMIT = 6
 
 export interface WorksGridHandle {
   reload: () => void
 }
 
-const WorksGrid = forwardRef<WorksGridHandle, {}>(function WorksGrid(_, ref) {
+interface Props {
+  /** true면 전체 표시 (portfolio 페이지용), 기본값 false = 홈 (6개 제한) */
+  showAll?: boolean
+}
+
+const WorksGrid = forwardRef<WorksGridHandle, Props>(function WorksGrid({ showAll = false }, ref) {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading]   = useState(true)
   const [editMode, setEditMode] = useState(false)
@@ -54,10 +63,14 @@ const WorksGrid = forwardRef<WorksGridHandle, {}>(function WorksGrid(_, ref) {
     window.dispatchEvent(new CustomEvent('project-edit', { detail: { action: 'add' } }))
   }
 
+  // 홈이면 6개만, portfolio 페이지면 전체
+  const displayed   = showAll ? projects : projects.slice(0, HOME_LIMIT)
+  const hasMore     = !showAll && projects.length > HOME_LIMIT
+
   return (
     <section id="works" className="works-section">
       <div className="section-header">
-        <h2 className="section-title">Recent Portfolio</h2>
+        <h2 className="section-title">{showAll ? 'Portfolio' : 'Recent Portfolio'}</h2>
       </div>
 
       <div className="works-grid" ref={gridRef}>
@@ -72,7 +85,7 @@ const WorksGrid = forwardRef<WorksGridHandle, {}>(function WorksGrid(_, ref) {
           </div>
         )}
 
-        {projects.map((p, i) => (
+        {displayed.map((p, i) => (
           <div
             key={p.id}
             className={`work-item ${p.col_size}`}
@@ -115,6 +128,17 @@ const WorksGrid = forwardRef<WorksGridHandle, {}>(function WorksGrid(_, ref) {
           </div>
         )}
       </div>
+
+      {/* More 버튼 — 홈에서 프로젝트가 6개 초과일 때만 표시 */}
+      {hasMore && !editMode && (
+        <div className="works-more-wrap">
+          <Link href="/portfolio" className="works-more-btn">
+            View All Works
+            <span className="works-more-arrow">→</span>
+          </Link>
+          <p className="works-more-count">{projects.length - HOME_LIMIT} more projects</p>
+        </div>
+      )}
     </section>
   )
 })
