@@ -1,89 +1,82 @@
 'use client'
 // app/admin/page.tsx
 import { useState, useEffect, useRef } from 'react'
-import type { Project } from '@/lib/types'
+import type { Project, Insight } from '@/lib/types'
 
-const ROMAN = ['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ','Ⅶ','Ⅷ','Ⅸ','Ⅹ']
-const COL_OPTIONS = ['col-4','col-5','col-6','col-7','col-8']
-const COL_LABELS: Record<string, string> = {
-  'col-4': '좁게 (col-4)', 'col-5': '보통 (col-5)', 'col-6': '중간 (col-6)',
-  'col-7': '넓게 (col-7)', 'col-8': '아주 넓게 (col-8)'
+/* ────────────────────────────────── Projects ──────────────────────────────── */
+const ROMAN        = ['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ','Ⅶ','Ⅷ','Ⅸ','Ⅹ']
+const COL_OPTIONS  = ['col-4','col-5','col-6','col-7','col-8']
+const COL_LABELS: Record<string,string> = {
+  'col-4':'좁게 (col-4)','col-5':'보통 (col-5)','col-6':'중간 (col-6)',
+  'col-7':'넓게 (col-7)','col-8':'아주 넓게 (col-8)',
 }
-const EMPTY_FORM = { title: '', tag: '', year: '', image_url: '', col_size: 'col-6', sort_order: 0 }
+const EMPTY_PROJECT = { title:'', tag:'', year:'', image_url:'', col_size:'col-6', sort_order:0 }
+const EMPTY_INSIGHT = { category:'', title:'', description:'', date:'', read_time:'', sort_order:0 }
 
 export default function AdminPage() {
-  const [token, setToken]       = useState('')
+  const [token,    setToken]    = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [loginErr, setLoginErr] = useState('')
-  const [toast, setToast]       = useState('')
+  const [toast,    setToast]    = useState('')
+  const [tab,      setTab]      = useState<'projects'|'insights'>('projects')
 
-  const [projects, setProjects]         = useState<Project[]>([])
-  const [form, setForm]                 = useState(EMPTY_FORM)
-  const [editId, setEditId]             = useState<number | null>(null)
-  const [saving, setSaving]             = useState(false)
-  const [imageFile, setImageFile]       = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState('')
+  /* ── Projects state ── */
+  const [projects,      setProjects]      = useState<Project[]>([])
+  const [projectForm,   setProjectForm]   = useState(EMPTY_PROJECT)
+  const [projectEditId, setProjectEditId] = useState<number|null>(null)
+  const [imageFile,     setImageFile]     = useState<File|null>(null)
+  const [imagePreview,  setImagePreview]  = useState('')
+  const [saving,        setSaving]        = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  /* ── Insights state ── */
+  const [insights,      setInsights]      = useState<Insight[]>([])
+  const [insightForm,   setInsightForm]   = useState(EMPTY_INSIGHT)
+  const [insightEditId, setInsightEditId] = useState<number|null>(null)
+  const [insightSaving, setInsightSaving] = useState(false)
+
+  /* ── Auth ── */
   useEffect(() => {
     const saved = localStorage.getItem('youjin_token')
     if (!saved) return
-
-    // 토큰 만료 여부 확인 (JWT payload의 exp 체크)
     try {
       const payload = JSON.parse(atob(saved.split('.')[1]))
-      if (payload.exp * 1000 < Date.now()) {
-        localStorage.removeItem('youjin_token')
-        return
-      }
-    } catch {
-      localStorage.removeItem('youjin_token')
-      return
-    }
-
+      if (payload.exp * 1000 < Date.now()) { localStorage.removeItem('youjin_token'); return }
+    } catch { localStorage.removeItem('youjin_token'); return }
     setToken(saved)
     fetchProjects()
+    fetchInsights()
   }, [])
 
   async function doLogin() {
     setLoginErr('')
-    const res  = await fetch('/api/auth', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    })
+    const res  = await fetch('/api/auth', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username,password}) })
     const data = await res.json()
     if (!res.ok) { setLoginErr(data.error); return }
     localStorage.setItem('youjin_token', data.token)
     setToken(data.token)
-    fetchProjects()
+    fetchProjects(); fetchInsights()
   }
+  function doLogout() { localStorage.removeItem('youjin_token'); setToken(''); setProjects([]); setInsights([]) }
 
-  function doLogout() {
-    localStorage.removeItem('youjin_token')
-    setToken(''); setProjects([])
-  }
-
+  /* ── Projects CRUD ── */
   async function fetchProjects() {
     const res  = await fetch('/api/projects')
     const data = await res.json()
     setProjects(Array.isArray(data) ? data : [])
   }
-
   function selectProject(p: Project) {
-    setEditId(p.id)
-    setForm({ title: p.title, tag: p.tag, year: p.year, image_url: p.image_url, col_size: p.col_size, sort_order: p.sort_order })
-    setImageFile(null); setImagePreview(p.image_url || '')
+    setProjectEditId(p.id)
+    setProjectForm({ title:p.title, tag:p.tag, year:p.year, image_url:p.image_url, col_size:p.col_size, sort_order:p.sort_order })
+    setImageFile(null); setImagePreview(p.image_url||'')
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
-
-  function resetForm() {
-    setEditId(null); setForm(EMPTY_FORM)
+  function resetProject() {
+    setProjectEditId(null); setProjectForm(EMPTY_PROJECT)
     setImageFile(null); setImagePreview('')
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
-
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]; if (!file) return
     setImageFile(file)
@@ -91,157 +84,260 @@ export default function AdminPage() {
     reader.onload = ev => setImagePreview(ev.target?.result as string)
     reader.readAsDataURL(file)
   }
-
   async function saveProject() {
-    if (!form.title || !form.tag || !form.year) { alert('제목, 태그, 연도는 필수입니다.'); return }
+    if (!projectForm.title || !projectForm.tag || !projectForm.year) { alert('제목, 태그, 연도는 필수입니다.'); return }
     setSaving(true)
     const fd = new FormData()
-    fd.append('title', form.title); fd.append('tag', form.tag)
-    fd.append('year', form.year);   fd.append('col_size', form.col_size)
-    fd.append('sort_order', String(form.sort_order))
+    fd.append('title', projectForm.title); fd.append('tag', projectForm.tag)
+    fd.append('year',  projectForm.year);  fd.append('col_size', projectForm.col_size)
+    fd.append('sort_order', String(projectForm.sort_order))
     if (imageFile) fd.append('image', imageFile)
-
-    const res = await fetch(editId ? `/api/projects/${editId}` : '/api/projects', {
-      method: editId ? 'PUT' : 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: fd
+    const res = await fetch(projectEditId ? `/api/projects/${projectEditId}` : '/api/projects', {
+      method: projectEditId ? 'PUT' : 'POST',
+      headers:{ Authorization:`Bearer ${token}` }, body:fd,
     })
     setSaving(false)
-    if (res.ok) { showToast(editId ? '✓ 수정 완료' : '✓ 추가 완료'); resetForm(); fetchProjects() }
-    else { const e = await res.json(); alert('오류: ' + e.error) }
+    if (res.ok) { showToast(projectEditId ? '✓ 수정 완료' : '✓ 추가 완료'); resetProject(); fetchProjects() }
+    else { const e = await res.json(); alert('오류: '+e.error) }
   }
-
   async function deleteProject(id: number, title: string) {
     if (!confirm(`"${title}" 프로젝트를 삭제할까요?`)) return
-    const res = await fetch(`/api/projects/${id}`, {
-      method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
+    const res = await fetch(`/api/projects/${id}`, { method:'DELETE', headers:{Authorization:`Bearer ${token}`} })
+    if (res.ok) { showToast('✓ 삭제 완료'); resetProject(); fetchProjects() }
+  }
+
+  /* ── Insights CRUD ── */
+  async function fetchInsights() {
+    const res  = await fetch('/api/insights')
+    const data = await res.json()
+    setInsights(Array.isArray(data) ? data : [])
+  }
+  function selectInsight(ins: Insight) {
+    setInsightEditId(ins.id)
+    setInsightForm({ category:ins.category, title:ins.title, description:ins.description, date:ins.date, read_time:ins.read_time, sort_order:ins.sort_order })
+  }
+  function resetInsight() { setInsightEditId(null); setInsightForm(EMPTY_INSIGHT) }
+  async function saveInsight() {
+    if (!insightForm.category || !insightForm.title || !insightForm.description || !insightForm.date) {
+      alert('카테고리, 제목, 설명, 날짜는 필수입니다.'); return
+    }
+    setInsightSaving(true)
+    const res = await fetch(insightEditId ? `/api/insights/${insightEditId}` : '/api/insights', {
+      method: insightEditId ? 'PUT' : 'POST',
+      headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
+      body: JSON.stringify(insightForm),
     })
-    if (res.ok) { showToast('✓ 삭제 완료'); resetForm(); fetchProjects() }
+    setInsightSaving(false)
+    if (res.ok) { showToast(insightEditId ? '✓ 수정 완료' : '✓ 추가 완료'); resetInsight(); fetchInsights() }
+    else { const e = await res.json(); alert('오류: '+e.error) }
+  }
+  async function deleteInsight(id: number, title: string) {
+    if (!confirm(`"${title}" 항목을 삭제할까요?`)) return
+    const res = await fetch(`/api/insights/${id}`, { method:'DELETE', headers:{Authorization:`Bearer ${token}`} })
+    if (res.ok) { showToast('✓ 삭제 완료'); resetInsight(); fetchInsights() }
   }
 
-  function showToast(msg: string) {
-    setToast(msg); setTimeout(() => setToast(''), 3000)
-  }
+  function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(''), 3000) }
 
-  // ── Login ──
+  /* ── Login ── */
   if (!token) return (
     <div style={s.loginWrap}>
       <div style={s.loginBox}>
         <h1 style={s.loginTitle}>Admin</h1>
         <p style={s.loginSub}>Youjin Portfolio CMS</p>
         <label style={s.label}>아이디</label>
-        <input style={s.input} value={username} onChange={e => setUsername(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && doLogin()} placeholder="admin" autoComplete="username" />
+        <input style={s.input} value={username} onChange={e=>setUsername(e.target.value)}
+          onKeyDown={e=>e.key==='Enter'&&doLogin()} placeholder="admin" autoComplete="username"/>
         <label style={s.label}>비밀번호</label>
-        <input style={s.input} type="password" value={password} onChange={e => setPassword(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && doLogin()} placeholder="••••••••" autoComplete="current-password" />
+        <input style={s.input} type="password" value={password} onChange={e=>setPassword(e.target.value)}
+          onKeyDown={e=>e.key==='Enter'&&doLogin()} placeholder="••••••••" autoComplete="current-password"/>
         {loginErr && <p style={s.errMsg}>{loginErr}</p>}
         <button style={s.btnPrimary} onClick={doLogin}>로그인</button>
       </div>
     </div>
   )
 
-  // ── Admin ──
+  /* ── Admin ── */
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+    <div style={{ minHeight:'100vh', background:'var(--bg)' }}>
 
       {/* Header */}
       <div style={s.adminHeader}>
         <span style={s.adminLogo}>Youjin CMS</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'0.8rem' }}>
           <a href="/" target="_blank" style={s.adminHeaderLink}>포트폴리오</a>
-          <a href="/?edit=1" target="_blank" style={s.liveEditBtn}>
-            ✏️ 라이브 편집
-          </a>
+          <a href="/?edit=1" target="_blank" style={s.liveEditBtn}>✏️ 라이브 편집</a>
           <button style={s.logoutBtn} onClick={doLogout}>로그아웃</button>
         </div>
       </div>
 
-      <div style={s.adminBody}>
-        {/* Left: Form */}
-        <div style={s.formPanel}>
-          <h2 style={s.panelTitle}>{editId ? '프로젝트 수정' : '프로젝트 추가'}</h2>
-          <p style={s.panelSub}>{editId ? `#${editId} 수정 중` : '새 프로젝트를 등록합니다'}</p>
+      {/* 탭 */}
+      <div style={s.tabBar}>
+        <button style={{ ...s.tabBtn, ...(tab==='projects' ? s.tabBtnActive : {}) }} onClick={()=>setTab('projects')}>
+          Portfolio <span style={s.tabCount}>{projects.length}</span>
+        </button>
+        <button style={{ ...s.tabBtn, ...(tab==='insights' ? s.tabBtnActive : {}) }} onClick={()=>setTab('insights')}>
+          Insight <span style={s.tabCount}>{insights.length}</span>
+        </button>
+      </div>
 
-          <div style={{ ...s.imgPreview, cursor: 'pointer' }} onClick={() => fileInputRef.current?.click()}>
-            {imagePreview
-              ? <img src={imagePreview} alt="preview" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-              : <div style={{ textAlign:'center' }}>
-                  <div style={{ fontSize:'1.5rem', marginBottom:'0.4rem', color:'var(--accent)' }}>↑</div>
-                  <span style={{ fontSize:'11px', color:'var(--muted)', letterSpacing:'0.08em', textTransform:'uppercase' }}>클릭하여 이미지 업로드</span>
-                </div>
-            }
-          </div>
-          <input ref={fileInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleImageChange} />
-          {imageFile && <p style={{ fontSize:'10px', color:'var(--muted)', marginBottom:'0.8rem' }}>📎 {imageFile.name}</p>}
-
-          {[
-            { label: '제목 *', key: 'title', placeholder: 'Project Title' },
-            { label: '태그 *', key: 'tag',   placeholder: 'Branding · Identity' },
-            { label: '연도 *', key: 'year',  placeholder: '2025' },
-          ].map(f => (
-            <div key={f.key} style={{ marginBottom: '1rem' }}>
-              <label style={s.label}>{f.label}</label>
-              <input style={s.input} placeholder={f.placeholder}
-                value={(form as any)[f.key]}
-                onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} />
-            </div>
-          ))}
-
-          <div style={{ marginBottom:'1rem' }}>
-            <label style={s.label}>카드 크기</label>
-            <select style={s.input} value={form.col_size} onChange={e => setForm(p => ({ ...p, col_size: e.target.value }))}>
-              {COL_OPTIONS.map(c => <option key={c} value={c}>{COL_LABELS[c]}</option>)}
-            </select>
-          </div>
-
-          <div style={{ marginBottom:'1rem' }}>
-            <label style={s.label}>정렬 순서</label>
-            <input style={s.input} type="number" min={0} placeholder="0 (낮을수록 앞에)"
-              value={form.sort_order} onChange={e => setForm(p => ({ ...p, sort_order: Number(e.target.value) }))} />
-          </div>
-
-          <div style={s.formActions}>
-            <button style={{ ...s.btnPrimary, opacity: saving ? 0.6 : 1 }} onClick={saveProject} disabled={saving}>
-              {saving ? '저장 중...' : '저장'}
-            </button>
-            <button style={s.btnSecondary} onClick={resetForm}>초기화</button>
-          </div>
-
-
-        </div>
-
-        {/* Right: List */}
-        <div style={s.listPanel}>
-          <div style={s.listHeader}>
-            <h2 style={s.panelTitle}>등록된 프로젝트</h2>
-            <span style={{ fontSize:'11px', color:'var(--muted)' }}>{projects.length} 개</span>
-          </div>
-          <div style={s.projectGrid}>
-            {projects.length === 0 && (
-              <div style={{ gridColumn:'1/-1', textAlign:'center', padding:'4rem', color:'var(--muted)', fontSize:'11px' }}>등록된 프로젝트가 없습니다</div>
-            )}
-            {projects.map((p, i) => (
-              <div key={p.id} style={{ ...s.card, ...(editId === p.id ? s.cardSelected : {}) }} onClick={() => selectProject(p)}>
-                <div style={s.cardThumb}>
-                  {p.image_url
-                    ? <img src={p.image_url} alt={p.title} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-                    : <span style={{ fontFamily:'DM Serif Display, serif', fontSize:'2rem', color:'var(--accent)' }}>{ROMAN[i] || i+1}</span>
-                  }
-                </div>
-                <div style={s.cardInfo}>
-                  <p style={s.cardTag}>{p.tag}</p>
-                  <h3 style={s.cardTitle}>{p.title}</h3>
-                  <div style={{ display:'flex', gap:'0.4rem' }}>
-                    <button style={s.btnSm} onClick={e => { e.stopPropagation(); selectProject(p) }}>수정</button>
-                    <button style={{ ...s.btnSm, ...s.btnDanger }} onClick={e => { e.stopPropagation(); deleteProject(p.id, p.title) }}>삭제</button>
+      {/* ── Projects 탭 ── */}
+      {tab === 'projects' && (
+        <div style={s.adminBody}>
+          {/* Form */}
+          <div style={s.formPanel}>
+            <h2 style={s.panelTitle}>{projectEditId ? '프로젝트 수정' : '프로젝트 추가'}</h2>
+            <p style={s.panelSub}>{projectEditId ? `#${projectEditId} 수정 중` : '새 프로젝트를 등록합니다'}</p>
+            <div style={{ ...s.imgPreview, cursor:'pointer' }} onClick={()=>fileInputRef.current?.click()}>
+              {imagePreview
+                ? <img src={imagePreview} alt="preview" style={{ width:'100%',height:'100%',objectFit:'cover' }}/>
+                : <div style={{ textAlign:'center' }}>
+                    <div style={{ fontSize:'1.5rem', marginBottom:'0.4rem', color:'var(--accent)' }}>↑</div>
+                    <span style={{ fontSize:'11px', color:'var(--muted)', letterSpacing:'0.08em', textTransform:'uppercase' }}>클릭하여 이미지 업로드</span>
                   </div>
-                </div>
+              }
+            </div>
+            <input ref={fileInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleImageChange}/>
+            {imageFile && <p style={{ fontSize:'10px', color:'var(--muted)', marginBottom:'0.8rem' }}>📎 {imageFile.name}</p>}
+            {[
+              { label:'제목 *', key:'title', placeholder:'Project Title' },
+              { label:'태그 *',  key:'tag',   placeholder:'Branding · Identity' },
+              { label:'연도 *',  key:'year',  placeholder:'2025' },
+            ].map(f => (
+              <div key={f.key} style={{ marginBottom:'1rem' }}>
+                <label style={s.label}>{f.label}</label>
+                <input style={s.input} placeholder={f.placeholder}
+                  value={(projectForm as any)[f.key]}
+                  onChange={e=>setProjectForm(p=>({...p,[f.key]:e.target.value}))}/>
               </div>
             ))}
+            <div style={{ marginBottom:'1rem' }}>
+              <label style={s.label}>카드 크기</label>
+              <select style={s.input} value={projectForm.col_size} onChange={e=>setProjectForm(p=>({...p,col_size:e.target.value}))}>
+                {COL_OPTIONS.map(c=><option key={c} value={c}>{COL_LABELS[c]}</option>)}
+              </select>
+            </div>
+            <div style={{ marginBottom:'1rem' }}>
+              <label style={s.label}>정렬 순서</label>
+              <input style={s.input} type="number" min={0} value={projectForm.sort_order}
+                onChange={e=>setProjectForm(p=>({...p,sort_order:Number(e.target.value)}))}/>
+            </div>
+            <div style={s.formActions}>
+              <button style={{ ...s.btnPrimary, opacity:saving?0.6:1 }} onClick={saveProject} disabled={saving}>
+                {saving ? '저장 중...' : '저장'}
+              </button>
+              <button style={s.btnSecondary} onClick={resetProject}>초기화</button>
+            </div>
+          </div>
+
+          {/* List */}
+          <div style={s.listPanel}>
+            <div style={s.listHeader}>
+              <h2 style={s.panelTitle}>등록된 프로젝트</h2>
+              <span style={{ fontSize:'11px', color:'var(--muted)' }}>{projects.length} 개</span>
+            </div>
+            <div style={s.projectGrid}>
+              {projects.length === 0 && (
+                <div style={{ gridColumn:'1/-1', textAlign:'center', padding:'4rem', color:'var(--muted)', fontSize:'11px' }}>등록된 프로젝트가 없습니다</div>
+              )}
+              {projects.map((p,i) => (
+                <div key={p.id} style={{ ...s.card, ...(projectEditId===p.id ? s.cardSelected:{}) }} onClick={()=>selectProject(p)}>
+                  <div style={s.cardThumb}>
+                    {p.image_url
+                      ? <img src={p.image_url} alt={p.title} style={{ width:'100%',height:'100%',objectFit:'cover' }}/>
+                      : <span style={{ fontFamily:'DM Serif Display, serif', fontSize:'2rem', color:'var(--accent)' }}>{ROMAN[i]||i+1}</span>
+                    }
+                  </div>
+                  <div style={s.cardInfo}>
+                    <p style={s.cardTag}>{p.tag}</p>
+                    <h3 style={s.cardTitle}>{p.title}</h3>
+                    <div style={{ display:'flex', gap:'0.4rem' }}>
+                      <button style={s.btnSm} onClick={e=>{e.stopPropagation();selectProject(p)}}>수정</button>
+                      <button style={{ ...s.btnSm,...s.btnDanger }} onClick={e=>{e.stopPropagation();deleteProject(p.id,p.title)}}>삭제</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* ── Insights 탭 ── */}
+      {tab === 'insights' && (
+        <div style={s.adminBody}>
+          {/* Form */}
+          <div style={s.formPanel}>
+            <h2 style={s.panelTitle}>{insightEditId ? 'Insight 수정' : 'Insight 추가'}</h2>
+            <p style={s.panelSub}>{insightEditId ? `#${insightEditId} 수정 중` : '새 글을 등록합니다'}</p>
+
+            {[
+              { label:'카테고리 *', key:'category', placeholder:'Design Thinking',  multi:false },
+              { label:'제목 *',     key:'title',    placeholder:'글 제목',           multi:false },
+              { label:'날짜 *',     key:'date',     placeholder:'2025.01',           multi:false },
+              { label:'읽기 시간',  key:'read_time',placeholder:'5 min read',        multi:false },
+            ].map(f => (
+              <div key={f.key} style={{ marginBottom:'1rem' }}>
+                <label style={s.label}>{f.label}</label>
+                <input style={s.input} placeholder={f.placeholder}
+                  value={(insightForm as any)[f.key]}
+                  onChange={e=>setInsightForm(p=>({...p,[f.key]:e.target.value}))}/>
+              </div>
+            ))}
+
+            <div style={{ marginBottom:'1rem' }}>
+              <label style={s.label}>설명 *</label>
+              <textarea
+                style={{ ...s.input, height:'100px', resize:'vertical' as const }}
+                placeholder="글에 대한 간략한 설명"
+                value={insightForm.description}
+                onChange={e=>setInsightForm(p=>({...p,description:e.target.value}))}
+              />
+            </div>
+
+            <div style={{ marginBottom:'1rem' }}>
+              <label style={s.label}>정렬 순서</label>
+              <input style={s.input} type="number" min={0} value={insightForm.sort_order}
+                onChange={e=>setInsightForm(p=>({...p,sort_order:Number(e.target.value)}))}/>
+            </div>
+
+            <div style={s.formActions}>
+              <button style={{ ...s.btnPrimary, opacity:insightSaving?0.6:1 }} onClick={saveInsight} disabled={insightSaving}>
+                {insightSaving ? '저장 중...' : '저장'}
+              </button>
+              <button style={s.btnSecondary} onClick={resetInsight}>초기화</button>
+            </div>
+          </div>
+
+          {/* List */}
+          <div style={s.listPanel}>
+            <div style={s.listHeader}>
+              <h2 style={s.panelTitle}>등록된 Insight</h2>
+              <span style={{ fontSize:'11px', color:'var(--muted)' }}>{insights.length} 개</span>
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:'0.8rem' }}>
+              {insights.length === 0 && (
+                <div style={{ textAlign:'center', padding:'4rem', color:'var(--muted)', fontSize:'11px' }}>등록된 글이 없습니다</div>
+              )}
+              {insights.map(ins => (
+                <div key={ins.id} style={{ ...s.insightRow, ...(insightEditId===ins.id ? s.cardSelected:{}) }} onClick={()=>selectInsight(ins)}>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:'0.6rem', marginBottom:'0.3rem' }}>
+                      <span style={{ ...s.cardTag, margin:0, color:'var(--accent)' }}>{ins.category}</span>
+                      <span style={{ fontSize:'10px', color:'var(--muted)' }}>{ins.date}</span>
+                    </div>
+                    <h3 style={{ ...s.cardTitle, fontSize:'0.9rem', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{ins.title}</h3>
+                  </div>
+                  <div style={{ display:'flex', gap:'0.4rem', flexShrink:0 }}>
+                    <button style={s.btnSm} onClick={e=>{e.stopPropagation();selectInsight(ins)}}>수정</button>
+                    <button style={{ ...s.btnSm,...s.btnDanger }} onClick={e=>{e.stopPropagation();deleteInsight(ins.id,ins.title)}}>삭제</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && <div style={s.toast}>{toast}</div>}
     </div>
@@ -249,36 +345,41 @@ export default function AdminPage() {
 }
 
 const s: Record<string, React.CSSProperties> = {
-  loginWrap:       { minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg)' },
-  loginBox:        { width:360, padding:'3rem', border:'1px solid var(--border)', background:'#fff', display:'flex', flexDirection:'column' },
-  loginTitle:      { fontFamily:'DM Serif Display, serif', fontSize:'1.8rem', marginBottom:'0.4rem' },
-  loginSub:        { color:'var(--muted)', fontSize:'11px', letterSpacing:'0.08em', marginBottom:'2.5rem' },
-  label:           { display:'block', fontSize:'10px', letterSpacing:'0.12em', textTransform:'uppercase' as const, color:'var(--muted)', marginBottom:'0.5rem' },
-  input:           { width:'100%', padding:'0.75rem 1rem', border:'1px solid var(--border)', background:'var(--bg)', fontFamily:'DM Mono, monospace', fontSize:'13px', color:'var(--fg)', outline:'none', marginBottom:'1rem', display:'block' },
-  errMsg:          { color:'#C0392B', fontSize:'11px', marginBottom:'0.8rem' },
-  btnPrimary:      { padding:'0.75rem 1.5rem', background:'var(--fg)', color:'var(--bg)', fontFamily:'DM Mono, monospace', fontSize:'11px', letterSpacing:'0.12em', textTransform:'uppercase' as const, border:'none', cursor:'pointer', width:'100%' },
-  btnSecondary:    { padding:'0.75rem 1.5rem', background:'transparent', color:'var(--fg)', fontFamily:'DM Mono, monospace', fontSize:'11px', letterSpacing:'0.12em', textTransform:'uppercase' as const, border:'1px solid var(--border)', cursor:'pointer', flex:1 },
-  btnSm:           { padding:'0.4rem 0.8rem', background:'transparent', color:'var(--fg)', fontFamily:'DM Mono, monospace', fontSize:'10px', letterSpacing:'0.1em', textTransform:'uppercase' as const, border:'1px solid var(--border)', cursor:'pointer' },
-  btnDanger:       { color:'#C0392B', borderColor:'#C0392B' },
-  adminHeader:     { position:'sticky' as const, top:0, zIndex:100, background:'var(--fg)', color:'var(--bg)', padding:'1rem 2rem', display:'flex', justifyContent:'space-between', alignItems:'center' },
-  adminLogo:       { fontFamily:'DM Serif Display, serif', fontSize:'1.1rem', color:'var(--bg)' },
-  adminHeaderLink: { color:'rgba(255,255,255,0.6)', textDecoration:'none', fontSize:'11px', letterSpacing:'0.1em', textTransform:'uppercase' as const },
-  logoutBtn:       { background:'none', border:'1px solid rgba(255,255,255,0.3)', color:'rgba(255,255,255,0.8)', fontFamily:'DM Mono, monospace', fontSize:'10px', letterSpacing:'0.1em', textTransform:'uppercase' as const, padding:'0.4rem 1rem', cursor:'pointer' },
-  adminBody:       { display:'grid', gridTemplateColumns:'340px 1fr', minHeight:'calc(100vh - 56px)' },
-  formPanel:       { background:'#fff', borderRight:'1px solid var(--border)', padding:'2rem', overflowY:'auto' as const, display:'flex', flexDirection:'column' as const },
-  panelTitle:      { fontFamily:'DM Serif Display, serif', fontSize:'1.2rem', marginBottom:'0.3rem' },
-  panelSub:        { fontSize:'10px', color:'var(--muted)', letterSpacing:'0.08em', marginBottom:'2rem', paddingBottom:'1.5rem', borderBottom:'1px solid var(--border)' },
-  imgPreview:      { width:'100%', aspectRatio:'4/3', background:'#ECEAE4', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:'0.8rem', overflow:'hidden' },
-  formActions:     { display:'flex', gap:'0.5rem', marginTop:'1.5rem', paddingTop:'1.5rem', borderTop:'1px solid var(--border)', marginBottom:'2rem' },
-  listPanel:       { padding:'2rem', overflowY:'auto' as const },
-  listHeader:      { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'2rem' },
-  projectGrid:     { display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:'1.2rem' },
-  card:            { background:'#fff', border:'1px solid var(--border)', overflow:'hidden', cursor:'pointer' },
-  cardSelected:    { borderColor:'var(--fg)' },
-  cardThumb:       { aspectRatio:'4/3', background:'#ECEAE4', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' },
-  cardInfo:        { padding:'0.8rem 1rem', borderTop:'1px solid var(--border)' },
-  cardTag:         { fontSize:'9px', letterSpacing:'0.12em', textTransform:'uppercase' as const, color:'var(--muted)', marginBottom:'0.2rem' },
-  cardTitle:       { fontFamily:'DM Serif Display, serif', fontSize:'0.95rem', marginBottom:'0.5rem' },
-  liveEditBtn:     { display:'inline-flex', alignItems:'center', gap:'0.3rem', padding:'0.4rem 1rem', background:'#C8B89A', color:'#1A1A18', fontFamily:'DM Mono, monospace', fontSize:'10px', letterSpacing:'0.1em', textTransform:'uppercase' as const, textDecoration:'none', whiteSpace:'nowrap' as const },
-  toast:           { position:'fixed' as const, bottom:'2rem', right:'2rem', background:'var(--fg)', color:'var(--bg)', padding:'0.8rem 1.5rem', fontSize:'11px', letterSpacing:'0.08em', zIndex:999 },
+  loginWrap:      { minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg)' },
+  loginBox:       { width:360, padding:'3rem', border:'1px solid var(--border)', background:'#fff', display:'flex', flexDirection:'column' },
+  loginTitle:     { fontFamily:'DM Serif Display, serif', fontSize:'1.8rem', marginBottom:'0.4rem' },
+  loginSub:       { color:'var(--muted)', fontSize:'11px', letterSpacing:'0.08em', marginBottom:'2.5rem' },
+  label:          { display:'block', fontSize:'10px', letterSpacing:'0.12em', textTransform:'uppercase' as const, color:'var(--muted)', marginBottom:'0.5rem' },
+  input:          { width:'100%', padding:'0.75rem 1rem', border:'1px solid var(--border)', background:'var(--bg)', fontFamily:'DM Mono, monospace', fontSize:'13px', color:'var(--fg)', outline:'none', marginBottom:'1rem', display:'block' },
+  errMsg:         { color:'#C0392B', fontSize:'11px', marginBottom:'0.8rem' },
+  btnPrimary:     { padding:'0.75rem 1.5rem', background:'var(--fg)', color:'var(--bg)', fontFamily:'DM Mono, monospace', fontSize:'11px', letterSpacing:'0.12em', textTransform:'uppercase' as const, border:'none', cursor:'pointer', width:'100%' },
+  btnSecondary:   { padding:'0.75rem 1.5rem', background:'transparent', color:'var(--fg)', fontFamily:'DM Mono, monospace', fontSize:'11px', letterSpacing:'0.12em', textTransform:'uppercase' as const, border:'1px solid var(--border)', cursor:'pointer', flex:1 },
+  btnSm:          { padding:'0.4rem 0.8rem', background:'transparent', color:'var(--fg)', fontFamily:'DM Mono, monospace', fontSize:'10px', letterSpacing:'0.1em', textTransform:'uppercase' as const, border:'1px solid var(--border)', cursor:'pointer' },
+  btnDanger:      { color:'#C0392B', borderColor:'#C0392B' },
+  adminHeader:    { position:'sticky' as const, top:0, zIndex:100, background:'var(--fg)', color:'var(--bg)', padding:'1rem 2rem', display:'flex', justifyContent:'space-between', alignItems:'center' },
+  adminLogo:      { fontFamily:'DM Serif Display, serif', fontSize:'1.1rem', color:'var(--bg)' },
+  adminHeaderLink:{ color:'rgba(255,255,255,0.6)', textDecoration:'none', fontSize:'11px', letterSpacing:'0.1em', textTransform:'uppercase' as const },
+  logoutBtn:      { background:'none', border:'1px solid rgba(255,255,255,0.3)', color:'rgba(255,255,255,0.8)', fontFamily:'DM Mono, monospace', fontSize:'10px', letterSpacing:'0.1em', textTransform:'uppercase' as const, padding:'0.4rem 1rem', cursor:'pointer' },
+  tabBar:         { display:'flex', gap:0, borderBottom:'1px solid var(--border)', background:'#fff', padding:'0 2rem' },
+  tabBtn:         { padding:'1rem 1.5rem', background:'none', border:'none', borderBottom:'2px solid transparent', fontFamily:'DM Mono, monospace', fontSize:'11px', letterSpacing:'0.1em', textTransform:'uppercase' as const, color:'var(--muted)', cursor:'pointer', display:'flex', alignItems:'center', gap:'0.5rem' },
+  tabBtnActive:   { color:'var(--fg)', borderBottomColor:'var(--fg)' },
+  tabCount:       { background:'var(--border)', color:'var(--muted)', fontSize:'9px', padding:'1px 6px', borderRadius:'100px' },
+  adminBody:      { display:'grid', gridTemplateColumns:'340px 1fr', minHeight:'calc(100vh - 110px)' },
+  formPanel:      { background:'#fff', borderRight:'1px solid var(--border)', padding:'2rem', overflowY:'auto' as const, display:'flex', flexDirection:'column' as const },
+  panelTitle:     { fontFamily:'DM Serif Display, serif', fontSize:'1.2rem', marginBottom:'0.3rem' },
+  panelSub:       { fontSize:'10px', color:'var(--muted)', letterSpacing:'0.08em', marginBottom:'2rem', paddingBottom:'1.5rem', borderBottom:'1px solid var(--border)' },
+  imgPreview:     { width:'100%', aspectRatio:'4/3', background:'#ECEAE4', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:'0.8rem', overflow:'hidden' },
+  formActions:    { display:'flex', gap:'0.5rem', marginTop:'1.5rem', paddingTop:'1.5rem', borderTop:'1px solid var(--border)', marginBottom:'2rem' },
+  listPanel:      { padding:'2rem', overflowY:'auto' as const },
+  listHeader:     { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'2rem' },
+  projectGrid:    { display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:'1.2rem' },
+  card:           { background:'#fff', border:'1px solid var(--border)', overflow:'hidden', cursor:'pointer' },
+  cardSelected:   { borderColor:'var(--fg)' },
+  cardThumb:      { aspectRatio:'4/3', background:'#ECEAE4', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' },
+  cardInfo:       { padding:'0.8rem 1rem', borderTop:'1px solid var(--border)' },
+  cardTag:        { fontSize:'9px', letterSpacing:'0.12em', textTransform:'uppercase' as const, color:'var(--muted)', marginBottom:'0.2rem' },
+  cardTitle:      { fontFamily:'DM Serif Display, serif', fontSize:'0.95rem', marginBottom:'0.5rem' },
+  insightRow:     { display:'flex', alignItems:'center', gap:'1rem', padding:'1rem', border:'1px solid var(--border)', background:'#fff', cursor:'pointer' },
+  liveEditBtn:    { display:'inline-flex', alignItems:'center', gap:'0.3rem', padding:'0.4rem 1rem', background:'#C8B89A', color:'#1A1A18', fontFamily:'DM Mono, monospace', fontSize:'10px', letterSpacing:'0.1em', textTransform:'uppercase' as const, textDecoration:'none', whiteSpace:'nowrap' as const },
+  toast:          { position:'fixed' as const, bottom:'2rem', right:'2rem', background:'var(--fg)', color:'var(--bg)', padding:'0.8rem 1.5rem', fontSize:'11px', letterSpacing:'0.08em', zIndex:999 },
 }

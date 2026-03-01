@@ -10,9 +10,7 @@ export default function About({ config }: Props) {
   return (
     <section id="about" className={`about-section ${hasImage ? 'has-image' : ''}`}>
 
-      <div className="about-left">
-        <div className="about-label">About</div>
-        
+      <div className="about-left">        
         <div
           className="about-image-wrap editable-field"
           data-edit="about_image_url"
@@ -30,7 +28,7 @@ export default function About({ config }: Props) {
       </div>
 
       <div className="about-content">
-        <h2>Designing with<br /><em>intention &amp; care</em></h2>
+        <h2>Designing for <em style={{color: '#b52d21'}}>Impact</em></h2>
         <p
           className="editable-field"
           data-edit="about_text1"

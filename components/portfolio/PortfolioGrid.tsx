@@ -1,25 +1,22 @@
 'use client'
-// components/WorksGrid.tsx
+// components/portfolio/PortfolioGrid.tsx
 import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Project } from '@/lib/types'
 
 const ROMAN = ['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ','Ⅶ','Ⅷ','Ⅸ','Ⅹ']
-
-// 홈에서 보여줄 최대 프로젝트 수
 const HOME_LIMIT = 6
 
-export interface WorksGridHandle {
+export interface PortfolioGridHandle {
   reload: () => void
 }
 
 interface Props {
-  /** true면 전체 표시 (portfolio 페이지용), 기본값 false = 홈 (6개 제한) */
   showAll?: boolean
 }
 
-const WorksGrid = forwardRef<WorksGridHandle, Props>(function WorksGrid({ showAll = false }, ref) {
+const PortfolioGrid = forwardRef<PortfolioGridHandle, Props>(function PortfolioGrid({ showAll = false }, ref) {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading]   = useState(true)
   const [editMode, setEditMode] = useState(false)
@@ -43,7 +40,6 @@ const WorksGrid = forwardRef<WorksGridHandle, Props>(function WorksGrid({ showAl
     return () => window.removeEventListener('edit-mode-change', handler)
   }, [])
 
-  // 스크롤 reveal
   useEffect(() => {
     if (!gridRef.current || loading) return
     const observer = new IntersectionObserver(entries => {
@@ -63,9 +59,8 @@ const WorksGrid = forwardRef<WorksGridHandle, Props>(function WorksGrid({ showAl
     window.dispatchEvent(new CustomEvent('project-edit', { detail: { action: 'add' } }))
   }
 
-  // 홈이면 6개만, portfolio 페이지면 전체
-  const displayed   = showAll ? projects : projects.slice(0, HOME_LIMIT)
-  const hasMore     = !showAll && projects.length > HOME_LIMIT
+  const displayed = showAll ? projects : projects.slice(0, HOME_LIMIT)
+  const hasMore   = !showAll && projects.length > HOME_LIMIT
 
   return (
     <section id="works" className="works-section">
@@ -97,9 +92,7 @@ const WorksGrid = forwardRef<WorksGridHandle, Props>(function WorksGrid({ showAl
                 ? <Image src={p.image_url} alt={p.title} fill style={{ objectFit:'cover' }} />
                 : <div className="work-thumb-placeholder">{ROMAN[i] || i + 1}</div>
               }
-              {editMode && (
-                <div className="work-edit-overlay"><span>✏ 수정</span></div>
-              )}
+              {editMode && <div className="work-edit-overlay"><span>✏ 수정</span></div>}
             </div>
             <div className="work-info">
               <p className="work-tag">{p.tag}</p>
@@ -108,13 +101,8 @@ const WorksGrid = forwardRef<WorksGridHandle, Props>(function WorksGrid({ showAl
           </div>
         ))}
 
-        {/* 편집 모드: 새 프로젝트 추가 카드 */}
         {editMode && !loading && (
-          <div
-            className="work-item col-4"
-            onClick={dispatchAdd}
-            style={{ cursor:'pointer', opacity:1, transform:'none' }}
-          >
+          <div className="work-item col-4" onClick={dispatchAdd} style={{ cursor:'pointer', opacity:1, transform:'none' }}>
             <div className="work-thumb" style={{ display:'flex', alignItems:'center', justifyContent:'center', background:'#f0f0f0', border:'2px dashed #ccc', position:'relative' }}>
               <div style={{ textAlign:'center' }}>
                 <div style={{ fontSize:'2rem', color:'#aaa', lineHeight:1 }}>+</div>
@@ -129,12 +117,10 @@ const WorksGrid = forwardRef<WorksGridHandle, Props>(function WorksGrid({ showAl
         )}
       </div>
 
-      {/* More 버튼 — 홈에서 프로젝트가 6개 초과일 때만 표시 */}
       {hasMore && !editMode && (
         <div className="works-more-wrap">
           <Link href="/portfolio" className="works-more-btn">
-            View All Works
-            <span className="works-more-arrow">→</span>
+            View All Works <span className="works-more-arrow">→</span>
           </Link>
           <p className="works-more-count">{projects.length - HOME_LIMIT} more projects</p>
         </div>
@@ -143,4 +129,4 @@ const WorksGrid = forwardRef<WorksGridHandle, Props>(function WorksGrid({ showAl
   )
 })
 
-export default WorksGrid
+export default PortfolioGrid

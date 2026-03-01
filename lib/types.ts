@@ -1,4 +1,15 @@
 // lib/types.ts
+export interface Insight {
+  id: number
+  category: string
+  title: string
+  description: string
+  date: string
+  read_time: string
+  sort_order: number
+  created_at?: string
+}
+
 export interface Project {
   id: number
   title: string

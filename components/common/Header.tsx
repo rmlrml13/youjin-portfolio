@@ -17,7 +17,6 @@ export default function Header({ name }: Props) {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // 메뉴 열릴 때 스크롤 막기
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
@@ -25,25 +24,22 @@ export default function Header({ name }: Props) {
 
   const close = () => setMenuOpen(false)
 
-  // 현재 페이지 여부로 active 스타일
-  const isHome      = pathname === '/'
   const isPortfolio = pathname === '/portfolio'
   const isInsight   = pathname === '/insight'
+  const isAbout     = pathname === '/about'
 
   return (
     <>
       <header className={`site-header ${scrolled ? 'scrolled' : ''}`}>
         <Link className="logo" href="/" onClick={close}>{name}</Link>
 
-        {/* 데스크탑 네비 */}
         <nav className="site-nav desktop-nav">
           <Link href="/portfolio" className={isPortfolio ? 'nav-active' : ''}>Portfolio</Link>
           <Link href="/insight"   className={isInsight   ? 'nav-active' : ''}>Insight</Link>
-          <a href={isHome ? '#about' : '/#about'}>About</a>
-          <a href={isHome ? '#contact' : '/#contact'} className="nav-cta">상담신청</a>
+          <Link href="/about"     className={isAbout     ? 'nav-active' : ''}>About</Link>
+          <Link href="/about#contact" className="nav-cta">상담신청</Link>
         </nav>
 
-        {/* 햄버거 버튼 (모바일) */}
         <button
           className="hamburger"
           onClick={() => setMenuOpen(m => !m)}
@@ -55,13 +51,12 @@ export default function Header({ name }: Props) {
         </button>
       </header>
 
-      {/* 모바일 드롭다운 메뉴 */}
       {menuOpen && (
         <div className="mobile-menu" onClick={close}>
           <Link href="/portfolio" onClick={close}>Portfolio</Link>
           <Link href="/insight"   onClick={close}>Insight</Link>
-          <a href={isHome ? '#about' : '/#about'} onClick={close}>About</a>
-          <a href={isHome ? '#contact' : '/#contact'} className="mobile-cta" onClick={close}>상담신청</a>
+          <Link href="/about"     onClick={close}>About</Link>
+          <Link href="/about#contact" className="mobile-cta" onClick={close}>상담신청</Link>
         </div>
       )}
     </>

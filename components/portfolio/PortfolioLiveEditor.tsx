@@ -1,26 +1,22 @@
 'use client'
-// components/LiveProjectEditor.tsx
-// body.live-edit-mode일 때 WorksGrid에 편집 기능을 주입
-
+// components/portfolio/PortfolioLiveEditor.tsx
 import { useState, useEffect } from 'react'
 import type { Project } from '@/lib/types'
-import type { WorksGridHandle } from './WorksGrid'
-import ProjectEditPanel from './ProjectEditPanel'
+import type { PortfolioGridHandle } from './PortfolioGrid'
+import PortfolioEditPanel from './PortfolioEditPanel'
 
 interface Props {
-  gridRef: React.RefObject<WorksGridHandle>
+  gridRef: React.RefObject<PortfolioGridHandle>
 }
 
-export default function LiveProjectEditor({ gridRef }: Props) {
-  const [editMode, setEditMode]           = useState(false)
-  const [panelOpen, setPanelOpen]         = useState(false)
-  const [editingProject, setEditingProject] = useState<Project | null>(null) // null = 새 프로젝트
-  const [token, setToken]                 = useState('')
+export default function PortfolioLiveEditor({ gridRef }: Props) {
+  const [editMode, setEditMode]             = useState(false)
+  const [panelOpen, setPanelOpen]           = useState(false)
+  const [editingProject, setEditingProject] = useState<Project | null>(null)
+  const [token, setToken]                   = useState('')
 
-  // body 클래스 변화 감지 → editMode 동기화
   useEffect(() => {
     setToken(localStorage.getItem('youjin_token') ?? '')
-
     const observer = new MutationObserver(() => {
       setEditMode(document.body.classList.contains('live-edit-mode'))
     })
@@ -28,18 +24,16 @@ export default function LiveProjectEditor({ gridRef }: Props) {
     return () => observer.disconnect()
   }, [])
 
-  // 편집 모드 진입 시 WorksGrid에 props 전달 (커스텀 이벤트)
   useEffect(() => {
     const handler = (e: Event) => {
       const { action, project } = (e as CustomEvent).detail
-      if (action === 'edit')   { setEditingProject(project); setPanelOpen(true) }
-      if (action === 'add')    { setEditingProject(null);    setPanelOpen(true) }
+      if (action === 'edit') { setEditingProject(project); setPanelOpen(true) }
+      if (action === 'add')  { setEditingProject(null);    setPanelOpen(true) }
     }
     window.addEventListener('project-edit', handler)
     return () => window.removeEventListener('project-edit', handler)
   }, [])
 
-  // WorksGrid에 editMode 알리기 — 커스텀 이벤트
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('edit-mode-change', { detail: { editMode } }))
   }, [editMode])
@@ -49,7 +43,7 @@ export default function LiveProjectEditor({ gridRef }: Props) {
   return (
     <>
       {panelOpen && (
-        <ProjectEditPanel
+        <PortfolioEditPanel
           project={editingProject}
           token={token}
           onSaved={() => {

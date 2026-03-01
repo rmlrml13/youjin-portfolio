@@ -2,7 +2,7 @@
 // components/LiveEditWrapper.tsx
 import { useState, useEffect, useCallback } from 'react'
 import type { SiteConfig } from '@/lib/types'
-import LiveEditPopup from './LiveEditPopup'
+import LiveEditPopup from './LiveEditPopup' // same folder
 
 interface Props {
   initialConfig: SiteConfig

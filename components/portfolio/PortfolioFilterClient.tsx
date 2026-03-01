@@ -1,16 +1,15 @@
 'use client'
-// components/PortfolioClient.tsx
-// 포트폴리오 전체 페이지 — 태그 필터 + 전체 그리드
+// components/portfolio/PortfolioFilterClient.tsx
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import type { Project } from '@/lib/types'
 
 const ROMAN = ['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ','Ⅶ','Ⅷ','Ⅸ','Ⅹ']
 
-export default function PortfolioClient() {
-  const [projects, setProjects]     = useState<Project[]>([])
-  const [loading, setLoading]       = useState(true)
-  const [activeTag, setActiveTag]   = useState('All')
+export default function PortfolioFilterClient() {
+  const [projects, setProjects]   = useState<Project[]>([])
+  const [loading, setLoading]     = useState(true)
+  const [activeTag, setActiveTag] = useState('All')
   const gridRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -20,7 +19,6 @@ export default function PortfolioClient() {
       .catch(() => setLoading(false))
   }, [])
 
-  // 스크롤 reveal
   useEffect(() => {
     if (!gridRef.current || loading) return
     const observer = new IntersectionObserver(entries => {
@@ -33,10 +31,7 @@ export default function PortfolioClient() {
     return () => observer.disconnect()
   }, [projects, loading, activeTag])
 
-  // 태그 목록 추출
-  const tags = ['All', ...Array.from(new Set(projects.map(p => p.tag))).filter(Boolean)]
-
-  // 필터링
+  const tags     = ['All', ...Array.from(new Set(projects.map(p => p.tag))).filter(Boolean)]
   const filtered = activeTag === 'All' ? projects : projects.filter(p => p.tag === activeTag)
 
   return (
@@ -44,39 +39,26 @@ export default function PortfolioClient() {
       {/* 태그 필터 바 */}
       <div className="portfolio-filter-bar">
         {tags.map(tag => (
-          <button
-            key={tag}
-            className={`portfolio-filter-btn ${activeTag === tag ? 'active' : ''}`}
-            onClick={() => setActiveTag(tag)}
-          >
+          <button key={tag} className={`portfolio-filter-btn ${activeTag === tag ? 'active' : ''}`} onClick={() => setActiveTag(tag)}>
             {tag}
             {tag !== 'All' && (
-              <span className="portfolio-filter-count">
-                {projects.filter(p => p.tag === tag).length}
-              </span>
+              <span className="portfolio-filter-count">{projects.filter(p => p.tag === tag).length}</span>
             )}
           </button>
         ))}
       </div>
 
-      {/* 프로젝트 수 */}
       <div className="portfolio-grid-meta">
         <span>{filtered.length} projects</span>
       </div>
 
-      {/* 그리드 */}
       <div className="works-grid" ref={gridRef}>
         {loading && (
-          <div style={{ gridColumn:'1/-1', color:'var(--muted)', padding:'6rem', textAlign:'center', fontSize:'12px', letterSpacing:'0.1em' }}>
-            Loading...
-          </div>
+          <div style={{ gridColumn:'1/-1', color:'var(--muted)', padding:'6rem', textAlign:'center', fontSize:'12px', letterSpacing:'0.1em' }}>Loading...</div>
         )}
         {!loading && filtered.length === 0 && (
-          <div style={{ gridColumn:'1/-1', color:'var(--muted)', padding:'6rem', textAlign:'center', fontSize:'12px' }}>
-            해당 태그의 프로젝트가 없습니다.
-          </div>
+          <div style={{ gridColumn:'1/-1', color:'var(--muted)', padding:'6rem', textAlign:'center', fontSize:'12px' }}>해당 태그의 프로젝트가 없습니다.</div>
         )}
-
         {filtered.map((p, i) => (
           <div key={p.id} className={`work-item ${p.col_size}`}>
             <div className="work-thumb" style={{ position:'relative' }}>
