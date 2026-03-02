@@ -1,7 +1,6 @@
 // app/about/page.tsx
 import Header  from '@/components/common/Header'
 import Footer  from '@/components/common/Footer'
-import Contact from '@/components/common/Contact'
 import { getSiteConfig } from '@/lib/config'
 
 export const dynamic = 'force-dynamic'
