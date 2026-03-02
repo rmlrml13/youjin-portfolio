@@ -8,6 +8,7 @@ import InsightPreview          from '@/components/home/InsightPreview'
 import { getSiteConfig }       from '@/lib/config'
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default async function HomePage() {
   const config = await getSiteConfig()

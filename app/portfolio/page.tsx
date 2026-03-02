@@ -5,6 +5,7 @@ import PortfolioFilterClient from '@/components/portfolio/PortfolioFilterClient'
 import { getSiteConfig }    from '@/lib/config'
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export async function generateMetadata() {
   const config = await getSiteConfig()

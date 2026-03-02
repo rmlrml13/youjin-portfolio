@@ -1,16 +1,30 @@
 // lib/config.ts
 import { DEFAULT_CONFIG, SiteConfig } from '@/lib/types'
-import { supabase } from '@/lib/supabase'
 
 export async function getSiteConfig(): Promise<SiteConfig> {
   try {
-    const { data, error } = await supabase
-      .from('site_config')
-      .select('key, value')
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    if (error || !data) return DEFAULT_CONFIG
+    if (!supabaseUrl || !supabaseKey) return DEFAULT_CONFIG
 
-    const config = (data as { key: string; value: string }[]).reduce((acc, row) => {
+    // fetch로 직접 호출 — Next.js 캐시를 완전히 우회
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/site_config?select=key,value`,
+      {
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+        },
+        cache: 'no-store',
+      }
+    )
+
+    if (!res.ok) return DEFAULT_CONFIG
+
+    const data: { key: string; value: string }[] = await res.json()
+
+    const config = data.reduce((acc, row) => {
       acc[row.key] = row.value
       return acc
     }, {} as Record<string, string>)
