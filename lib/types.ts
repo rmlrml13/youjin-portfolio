@@ -18,6 +18,26 @@ export interface Project {
   image_url: string
   col_size: string
   sort_order: number
+  description?: string
+  client?: string
+  created_at?: string
+}
+
+export interface ProjectBlock {
+  id: number
+  project_id: number
+  type: 'heading' | 'text' | 'image' | 'divider'
+  content: string
+  image_url: string
+  sort_order: number
+  created_at?: string
+}
+
+export interface ProjectImage {
+  id: number
+  project_id: number
+  image_url: string
+  sort_order: number
   created_at?: string
 }
 

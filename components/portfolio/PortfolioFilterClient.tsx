@@ -2,6 +2,7 @@
 // components/portfolio/PortfolioFilterClient.tsx
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import type { Project } from '@/lib/types'
 
 const ROMAN = ['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ','Ⅶ','Ⅷ','Ⅸ','Ⅹ']
@@ -60,18 +61,19 @@ export default function PortfolioFilterClient() {
           <div style={{ gridColumn:'1/-1', color:'var(--muted)', padding:'6rem', textAlign:'center', fontSize:'12px' }}>해당 태그의 프로젝트가 없습니다.</div>
         )}
         {filtered.map((p, i) => (
-          <div key={p.id} className={`work-item ${p.col_size}`}>
+          <Link key={p.id} href={`/portfolio/${p.id}`} className={`work-item ${p.col_size}`} style={{ textDecoration:'none' }}>
             <div className="work-thumb" style={{ position:'relative' }}>
               {p.image_url
                 ? <Image src={p.image_url} alt={p.title} fill style={{ objectFit:'cover' }} />
                 : <div className="work-thumb-placeholder">{ROMAN[i] || i + 1}</div>
               }
+              <div className="work-hover-overlay"><span>View Project →</span></div>
             </div>
             <div className="work-info">
               <p className="work-tag">{p.tag}</p>
               <h3 className="work-title">{p.title}</h3>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </section>

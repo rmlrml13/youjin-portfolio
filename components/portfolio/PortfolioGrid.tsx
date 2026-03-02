@@ -81,24 +81,45 @@ const PortfolioGrid = forwardRef<PortfolioGridHandle, Props>(function PortfolioG
         )}
 
         {displayed.map((p, i) => (
-          <div
-            key={p.id}
-            className={`work-item ${p.col_size}`}
-            onClick={editMode ? () => dispatchEdit(p) : undefined}
-            style={editMode ? { cursor:'pointer' } : undefined}
-          >
-            <div className="work-thumb" style={{ position:'relative' }}>
-              {p.image_url
-                ? <Image src={p.image_url} alt={p.title} fill style={{ objectFit:'cover' }} />
-                : <div className="work-thumb-placeholder">{ROMAN[i] || i + 1}</div>
-              }
-              {editMode && <div className="work-edit-overlay"><span>✏ 수정</span></div>}
+          editMode ? (
+            <div
+              key={p.id}
+              className={`work-item ${p.col_size}`}
+              onClick={() => dispatchEdit(p)}
+              style={{ cursor:'pointer' }}
+            >
+              <div className="work-thumb" style={{ position:'relative' }}>
+                {p.image_url
+                  ? <Image src={p.image_url} alt={p.title} fill style={{ objectFit:'cover' }} />
+                  : <div className="work-thumb-placeholder">{ROMAN[i] || i + 1}</div>
+                }
+                <div className="work-edit-overlay"><span>✏ 수정</span></div>
+              </div>
+              <div className="work-info">
+                <p className="work-tag">{p.tag}</p>
+                <h3 className="work-title">{p.title}</h3>
+              </div>
             </div>
-            <div className="work-info">
-              <p className="work-tag">{p.tag}</p>
-              <h3 className="work-title">{p.title}</h3>
-            </div>
-          </div>
+          ) : (
+            <Link
+              key={p.id}
+              href={`/portfolio/${p.id}`}
+              className={`work-item ${p.col_size}`}
+              style={{ textDecoration:'none' }}
+            >
+              <div className="work-thumb" style={{ position:'relative' }}>
+                {p.image_url
+                  ? <Image src={p.image_url} alt={p.title} fill style={{ objectFit:'cover' }} />
+                  : <div className="work-thumb-placeholder">{ROMAN[i] || i + 1}</div>
+                }
+                <div className="work-hover-overlay"><span>View Project →</span></div>
+              </div>
+              <div className="work-info">
+                <p className="work-tag">{p.tag}</p>
+                <h3 className="work-title">{p.title}</h3>
+              </div>
+            </Link>
+          )
         ))}
 
         {editMode && !loading && (
