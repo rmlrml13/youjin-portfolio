@@ -7,6 +7,7 @@ import Footer from '@/components/common/Footer'
 import { getSiteConfig } from '@/lib/config'
 import { supabase } from '@/lib/supabase'
 import type { Project, ProjectBlock } from '@/lib/types'
+import ViewTracker from '@/components/portfolio/ViewTracker'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -57,6 +58,7 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
   return (
     <>
       <Header name={config.hero_name} />
+      <ViewTracker projectId={project.id} />
 
       {/* ── 히어로 ── */}
       <div className="pd-hero">
@@ -66,11 +68,12 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
         }
         <div className="pd-hero-overlay" />
         <div className="pd-hero-meta">
-          <Link href="/portfolio" className="pd-back">← Portfolio</Link>
+          <div />
           <div className="pd-hero-info">
-            <span className="pd-tag">{project.tag}</span>
             <h1 className="pd-title">{project.title}</h1>
-            <span className="pd-year">{project.year}</span>
+            {project.description && (
+              <p className="pd-hero-desc">{project.description}</p>
+            )}
           </div>
         </div>
       </div>
@@ -78,27 +81,23 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
       {/* ── 프로젝트 메타 정보 ── */}
       <section className="pd-info-section">
         <div className="pd-info-inner">
-          <div className="pd-info-left">
-            <div className="pd-info-item">
+          {/* 메타 항목 — 좌: Category / 우: Date · Views */}
+          <div className="pd-meta-row">
+            <div className="pd-meta-item">
               <span className="pd-info-label">Category</span>
               <span className="pd-info-value">{project.tag}</span>
             </div>
-            <div className="pd-info-item">
-              <span className="pd-info-label">Year</span>
-              <span className="pd-info-value">{project.year}</span>
+            <div style={{ flex:1 }} />
+            <div className="pd-meta-item" style={{ alignItems:'flex-end' }}>
+              <span className="pd-info-label">Date</span>
+              <span className="pd-info-value">{fmtDate(project.created_at)}</span>
             </div>
-            {project.client && (
-              <div className="pd-info-item">
-                <span className="pd-info-label">Client</span>
-                <span className="pd-info-value">{project.client}</span>
-              </div>
-            )}
+            <div className="pd-meta-divider" />
+            <div className="pd-meta-item" style={{ alignItems:'flex-end' }}>
+              <span className="pd-info-label">Views</span>
+              <span className="pd-info-value">{(project.view_count ?? 0).toLocaleString()}</span>
+            </div>
           </div>
-          {project.description && (
-            <div className="pd-info-right">
-              <p className="pd-description">{project.description}</p>
-            </div>
-          )}
         </div>
       </section>
 
@@ -121,7 +120,7 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
               </Link>
             : <div />
           }
-          <Link href="/portfolio" className="pd-nav-all">All Works</Link>
+          <Link href="/portfolio" className="pd-nav-all">Back List</Link>
           {next
             ? <Link href={`/portfolio/${next.id}`} className="pd-nav-item pd-nav-next">
                 <span className="pd-nav-label">Next →</span>
@@ -135,6 +134,13 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
       <Footer config={config} />
     </>
   )
+}
+
+// ── 날짜 포맷 ──
+function fmtDate(iso?: string) {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`
 }
 
 // ── 블록 렌더러 ──

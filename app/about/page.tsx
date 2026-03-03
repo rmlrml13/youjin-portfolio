@@ -23,6 +23,7 @@ export default async function AboutPage() {
         <div className="page-hero-inner">
           <p className="page-hero-label">About</p>
           <h1 className="page-hero-title">About</h1>
+          <p className="page-hero-desc">what i think, what i pursue</p>
         </div>
       </div>
 

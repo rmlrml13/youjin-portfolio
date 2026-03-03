@@ -24,9 +24,9 @@ export default function Header({ name }: Props) {
 
   const close = () => setMenuOpen(false)
 
-  const isPortfolio = pathname === '/portfolio'
-  const isInsight   = pathname === '/insight'
-  const isAbout     = pathname === '/about'
+  const isPortfolio = pathname.startsWith('/portfolio')
+  const isInsight   = pathname.startsWith('/insight')
+  const isAbout     = pathname.startsWith('/about')
 
   return (
     <>

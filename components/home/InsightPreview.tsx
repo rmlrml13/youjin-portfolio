@@ -27,7 +27,6 @@ export default function InsightPreview() {
     <section className="ins-prev-section">
       <div className="ins-prev-top">
         <div>
-          <p className="ins-prev-eyebrow">Writing</p>
           <h2 className="ins-prev-heading">Insight</h2>
         </div>
         <Link href="/insight" className="ins-prev-viewall">

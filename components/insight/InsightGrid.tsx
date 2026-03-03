@@ -1,13 +1,15 @@
 'use client'
-// components/InsightGrid.tsx
-import Link from 'next/link'
+// components/insight/InsightGrid.tsx
 import { useState, useEffect } from 'react'
 import type { Insight } from '@/lib/types'
 
+const PER_PAGE = 6
+
 export default function InsightGrid() {
   const [insights, setInsights] = useState<Insight[]>([])
-  const [loading, setLoading]   = useState(true)
-  const [active, setActive]     = useState('All')
+  const [loading,  setLoading]  = useState(true)
+  const [active,   setActive]   = useState('All')
+  const [page,     setPage]     = useState(1)
 
   useEffect(() => {
     fetch('/api/insights')
@@ -16,8 +18,16 @@ export default function InsightGrid() {
       .catch(() => setLoading(false))
   }, [])
 
+  // 카테고리 바뀌면 1페이지로
+  function handleCatChange(cat: string) {
+    setActive(cat)
+    setPage(1)
+  }
+
   const categories = ['All', ...Array.from(new Set(insights.map(p => p.category))).filter(Boolean)]
   const filtered   = active === 'All' ? insights : insights.filter(p => p.category === active)
+  const totalPages = Math.ceil(filtered.length / PER_PAGE)
+  const paginated  = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE)
 
   return (
     <>
@@ -27,7 +37,7 @@ export default function InsightGrid() {
           <button
             key={cat}
             className={`ins-tab ${active === cat ? 'ins-tab--active' : ''}`}
-            onClick={() => setActive(cat)}
+            onClick={() => handleCatChange(cat)}
           >
             {cat}
             {cat !== 'All' && (
@@ -51,7 +61,7 @@ export default function InsightGrid() {
             등록된 글이 없습니다.
           </div>
         )}
-        {filtered.map(post => (
+        {paginated.map(post => (
           <div key={post.id} className="ins-card ins-card--page">
             <div className="ins-card-thumb">
               <span className="ins-card-cat">{post.category}</span>
@@ -67,6 +77,37 @@ export default function InsightGrid() {
           </div>
         ))}
       </div>
+
+      {/* 페이지네이션 */}
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button
+            className="pagination-btn"
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+          >
+            ←
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+            <button
+              key={n}
+              className={`pagination-btn ${page === n ? 'active' : ''}`}
+              onClick={() => setPage(n)}
+            >
+              {n}
+            </button>
+          ))}
+
+          <button
+            className="pagination-btn"
+            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+          >
+            →
+          </button>
+        </div>
+      )}
     </>
   )
 }

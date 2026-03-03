@@ -21,10 +21,8 @@ export default function PortfolioEditPanel({ project, token, onSaved, onDeleted,
   const [form, setForm] = useState({
     title:       project?.title       ?? '',
     tag:         project?.tag         ?? '',
-    year:        project?.year        ?? String(new Date().getFullYear()),
     sort_order:  project?.sort_order  ?? 0,
     description: project?.description ?? '',
-    client:      project?.client      ?? '',
   })
   const [imageFile, setImageFile]       = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState(project?.image_url ?? '')
@@ -37,10 +35,8 @@ export default function PortfolioEditPanel({ project, token, onSaved, onDeleted,
     setForm({
       title:       project?.title       ?? '',
       tag:         project?.tag         ?? '',
-      year:        project?.year        ?? String(new Date().getFullYear()),
       sort_order:  project?.sort_order  ?? 0,
       description: project?.description ?? '',
-      client:      project?.client      ?? '',
     })
     setImageFile(null)
     setImagePreview(project?.image_url ?? '')
@@ -61,7 +57,7 @@ export default function PortfolioEditPanel({ project, token, onSaved, onDeleted,
   }
 
   async function handleSave() {
-    if (!form.title || !form.tag || !form.year) { alert('제목, 태그, 연도는 필수예요.'); return }
+    if (!form.title || !form.tag) { alert('제목, 태그는 필수예요.'); return }
     setSaving(true)
     const fd = new FormData()
     Object.entries(form).forEach(([k, v]) => fd.append(k, String(v)))
