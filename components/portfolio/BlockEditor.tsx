@@ -1,12 +1,18 @@
 'use client'
 // components/portfolio/BlockEditor.tsx
 // Admin 패널 내 블록 에디터 — 텍스트/이미지/제목/구분선 블록 관리
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useImperativeHandle, forwardRef } from 'react'
 import type { ProjectBlock } from '@/lib/types'
+
+export interface BlockEditorHandle {
+  /** 현재 편집 중인 블록이 있으면 저장 후 resolve */
+  flush: () => Promise<void>
+}
 
 interface Props {
   projectId: number
   token: string
+  apiBase?: string
 }
 
 const BLOCK_TYPES = [
@@ -16,19 +22,38 @@ const BLOCK_TYPES = [
   { type: 'divider',  label: '—  구분선',   icon: '—' },
 ] as const
 
-export default function BlockEditor({ projectId, token }: Props) {
+const BlockEditor = forwardRef<BlockEditorHandle, Props>(function BlockEditor({ projectId, token, apiBase = '/api/projects' }, ref) {
   const [blocks, setBlocks]     = useState<ProjectBlock[]>([])
   const [loading, setLoading]   = useState(true)
   const [saving, setSaving]     = useState<number | null>(null) // blockId
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editContent, setEditContent] = useState('')
   const imgRefs = useRef<Record<number, HTMLInputElement | null>>({})
+  const base = `${apiBase}/${projectId}/blocks`
+  // 편집 중 콘텐츠를 ref로 노cd9c (flush에서 사용)
+  const editingIdRef    = useRef<number | null>(null)
+  const editContentRef  = useRef<string>('')
+
+  useImperativeHandle(ref, () => ({
+    async flush() {
+      const id = editingIdRef.current
+      if (id == null) return
+      await fetch(`${base}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ content: editContentRef.current }),
+      })
+      setBlocks(prev => prev.map(b => b.id === id ? { ...b, content: editContentRef.current } : b))
+      setEditingId(null)
+      editingIdRef.current = null
+    }
+  }))
 
   useEffect(() => { loadBlocks() }, [projectId])
 
   async function loadBlocks() {
     setLoading(true)
-    const res  = await fetch(`/api/projects/${projectId}/blocks`)
+    const res  = await fetch(base)
     const data = await res.json()
     setBlocks(Array.isArray(data) ? data : [])
     setLoading(false)
@@ -46,7 +71,7 @@ export default function BlockEditor({ projectId, token }: Props) {
         const fd = new FormData()
         fd.append('image', file)
         fd.append('sort_order', String(blocks.length))
-        const res = await fetch(`/api/projects/${projectId}/blocks`, {
+        const res = await fetch(base, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
           body: fd,
@@ -57,7 +82,7 @@ export default function BlockEditor({ projectId, token }: Props) {
       return
     }
 
-    const res = await fetch(`/api/projects/${projectId}/blocks`, {
+    const res = await fetch(base, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ type, content: '', sort_order: blocks.length }),
@@ -66,14 +91,14 @@ export default function BlockEditor({ projectId, token }: Props) {
       const b = await res.json()
       setBlocks(prev => [...prev, b])
       // 텍스트/heading은 바로 편집 모드
-      if (type !== 'divider') { setEditingId(b.id); setEditContent('') }
+      if (type !== 'divider') { setEditingId(b.id); setEditContent(''); editingIdRef.current = b.id; editContentRef.current = '' }
     }
   }
 
   // ── 블록 내용 저장 ──
   async function saveBlock(blockId: number, content: string) {
     setSaving(blockId)
-    await fetch(`/api/projects/${projectId}/blocks/${blockId}`, {
+    await fetch(`${base}/${blockId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ content }),
@@ -81,12 +106,13 @@ export default function BlockEditor({ projectId, token }: Props) {
     setBlocks(prev => prev.map(b => b.id === blockId ? { ...b, content } : b))
     setSaving(null)
     setEditingId(null)
+    editingIdRef.current = null
   }
 
   // ── 블록 삭제 ──
   async function deleteBlock(blockId: number) {
     if (!confirm('이 블록을 삭제할까요?')) return
-    await fetch(`/api/projects/${projectId}/blocks/${blockId}`, {
+    await fetch(`${base}/${blockId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -109,12 +135,12 @@ export default function BlockEditor({ projectId, token }: Props) {
 
     // 두 블록만 서버에 저장
     await Promise.all([
-      fetch(`/api/projects/${projectId}/blocks/${updated[idx].id}`, {
+      fetch(`${base}/${updated[idx].id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ sort_order: updated[idx].sort_order }),
       }),
-      fetch(`/api/projects/${projectId}/blocks/${updated[swapIdx].id}`, {
+      fetch(`${base}/${updated[swapIdx].id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ sort_order: updated[swapIdx].sort_order }),
@@ -151,7 +177,7 @@ export default function BlockEditor({ projectId, token }: Props) {
               <button onClick={() => moveBlock(block.id, 'down')} disabled={idx === blocks.length-1} style={btnStyle(idx === blocks.length-1)}>↓</button>
               {/* 편집 버튼 (텍스트/heading만) */}
               {(block.type === 'text' || block.type === 'heading') && editingId !== block.id && (
-                <button onClick={() => { setEditingId(block.id); setEditContent(block.content) }} style={{ ...btnStyle(false), color:'#1A1A18' }}>✏</button>
+                <button onClick={() => { setEditingId(block.id); setEditContent(block.content); editingIdRef.current = block.id; editContentRef.current = block.content }} style={{ ...btnStyle(false), color:'#1A1A18' }}>✏</button>
               )}
               {/* 삭제 버튼 */}
               <button onClick={() => deleteBlock(block.id)} style={{ ...btnStyle(false), color:'#C0392B' }}>✕</button>
@@ -176,7 +202,7 @@ export default function BlockEditor({ projectId, token }: Props) {
                   <textarea
                     autoFocus
                     value={editContent}
-                    onChange={e => setEditContent(e.target.value)}
+                    onChange={e => { setEditContent(e.target.value); editContentRef.current = e.target.value }}
                     placeholder={block.type === 'heading' ? '제목을 입력하세요' : '본문을 입력하세요...'}
                     style={{
                       width:'100%', minHeight: block.type === 'heading' ? '48px' : '100px',
@@ -205,7 +231,7 @@ export default function BlockEditor({ projectId, token }: Props) {
                 </div>
               ) : (
                 <div
-                  onClick={() => { setEditingId(block.id); setEditContent(block.content) }}
+                  onClick={() => { setEditingId(block.id); setEditContent(block.content); editingIdRef.current = block.id; editContentRef.current = block.content }}
                   style={{ padding:'0.75rem 1rem', cursor:'text', minHeight:'2.5rem' }}
                 >
                   {block.content
@@ -242,7 +268,9 @@ export default function BlockEditor({ projectId, token }: Props) {
       </div>
     </div>
   )
-}
+})
+
+export default BlockEditor
 
 function btnStyle(disabled: boolean): React.CSSProperties {
   return {

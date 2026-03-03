@@ -110,10 +110,11 @@ export default function AdminPage() {
     setIsCreatingInsight(true)
   }
 
-  function handleInsightSaved() {
-    showToast('✓ 저장 완료')
-    setSelectedInsight(null); setIsCreatingInsight(false)
+  function handleInsightSaved(saved: Insight, isNew: boolean) {
+    showToast(isNew ? '✓ 등록 완료' : '✓ 저장 완료')
     fetchInsights()
+    setSelectedInsight(saved)
+    setIsCreatingInsight(false)
   }
 
   function handleInsightDeleted() {
@@ -186,7 +187,7 @@ export default function AdminPage() {
               selectedInsight={selectedInsight}
               isCreating={isCreatingInsight}
               token={token}
-              onSaved={handleInsightSaved}
+              onSaved={(saved, isNew) => handleInsightSaved(saved, isNew)}
               onDeleted={handleInsightDeleted}
             />
           )}

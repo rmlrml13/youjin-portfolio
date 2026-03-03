@@ -62,7 +62,7 @@ export default function InsightGrid() {
           </div>
         )}
         {paginated.map(post => (
-          <div key={post.id} className="ins-card ins-card--page">
+          <a key={post.id} href={`/insight/${post.id}`} className="ins-card ins-card--page">
             <div className="ins-card-thumb">
               <span className="ins-card-cat">{post.category}</span>
             </div>
@@ -74,7 +74,7 @@ export default function InsightGrid() {
               <span className="ins-card-date">{post.date}</span>
               <span className="ins-card-read">{post.read_time}</span>
             </div>
-          </div>
+          </a>
         ))}
       </div>
 

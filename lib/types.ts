@@ -7,7 +7,18 @@ export interface Insight {
   date: string
   read_time: string
   sort_order: number
+  view_count?: number
   created_at?: string
+  updated_at?: string
+}
+
+export interface InsightBlock {
+  id: number
+  insight_id: number
+  type: 'heading' | 'text' | 'image' | 'divider'
+  content: string
+  image_url: string
+  sort_order: number
 }
 
 export interface Project {

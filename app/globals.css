@@ -1113,104 +1113,125 @@ body.live-edit-mode .editable-field:hover::after { opacity: 1; }
 }
 .work-item:hover .work-hover-overlay { opacity: 1; }
 
+/* ── Insight Detail ── */
+.ins-detail-hero {
+  background: var(--bg-dark);
+  padding: 8rem var(--gap) 5rem;
+}
+.ins-detail-hero-inner {
+  max-width: 780px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+.ins-detail-cat {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-family: 'DM Mono', monospace;
+}
+.ins-detail-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(2rem, 5vw, 3.8rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: #fff;
+}
+.ins-detail-desc {
+  font-size: 15px;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.8;
+  max-width: 580px;
+}
+
 /* ── Project Detail ── */
 .pd-hero {
   position: relative;
   width: 100%;
-  height: 500px;
-  /*min-height: 500px; */
+  height: 520px;
   background: #111;
   overflow: hidden;
 }
 .pd-hero-placeholder { width: 100%; height: 100%; background: #1a1a1a; }
 .pd-hero-overlay {
   position: absolute; inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 60%);
+  background: linear-gradient(to bottom,
+    rgba(0,0,0,0.35) 0%,
+    rgba(0,0,0,0.1) 40%,
+    rgba(0,0,0,0.1) 60%,
+    rgba(0,0,0,0.65) 100%);
 }
 .pd-hero-meta {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
   justify-content: space-between;
-  padding: 2rem var(--gap) 3.5rem;
+  padding: 0 var(--gap) 3.5rem;
   max-width: calc(1280px + var(--gap) * 2);
   margin: 0 auto; left: 0; right: 0;
 }
-.pd-back {
-  display: inline-flex; align-items: center; gap: 0.5rem;
-  color: rgba(255,255,255,0.6);
-  text-decoration: none;
-  font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
-  margin-top: 5rem;
-  transition: color 0.2s;
-  width: fit-content;
+/* 중앙 메타 영역 */
+.pd-hero-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.pd-back:hover { color: #fff; }
-.pd-hero-info { display: flex; flex-direction: column; gap: 0.6rem; }
-.pd-tag {
-  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--accent); background: rgba(255,255,255,0.1);
-  padding: 0.3rem 0.8rem; border-radius: 100px; width: fit-content;
+.pd-hero-meta-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 100px;
+  padding: 0.6rem 1.5rem;
 }
+.pd-hero-meta-item {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.85);
+  font-family: 'DM Mono', monospace;
+}
+.pd-hero-meta-dot {
+  color: rgba(255,255,255,0.3);
+  font-size: 14px;
+}
+.pd-hero-info { display: flex; flex-direction: column; gap: 0.4rem; }
 .pd-title {
   font-family: 'DM Serif Display', serif;
   font-size: clamp(2.5rem, 6vw, 5rem);
   font-weight: 700; letter-spacing: -0.02em; line-height: 1.05;
   color: #fff;
 }
-.pd-year {
-  font-size: 11px; letter-spacing: 0.12em;
-  color: rgba(255,255,255,0.4);
-}
-.pd-hero-desc {
-  font-size: 14px;
-  color: rgba(255,255,255,0.6);
-  line-height: 1.7;
-  max-width: 560px;
-  margin-top: 0.6rem;
-  letter-spacing: 0.01em;
-}
 
-/* 프로젝트 정보 */
-.pd-info-section {
+
+
+/* 메타 바 */
+.pd-meta-bar {
   border-bottom: 1px solid var(--border);
-  padding: 2.5rem var(--gap);
+  padding: 1.2rem var(--gap);
 }
-.pd-info-inner {
-  max-width: 1280px; margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-/* 가로 메타 바 */
-.pd-meta-row {
+.pd-meta-bar-inner {
+  max-width: 1280px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: 0;
-  flex-wrap: wrap;
+  gap: 0.75rem;
 }
-.pd-meta-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  padding: 0 2rem;
-}
-.pd-meta-item:first-child { padding-left: 0; }
-.pd-meta-divider {
-  width: 1px;
-  height: 2.5rem;
-  background: var(--border);
-  flex-shrink: 0;
-}
-.pd-info-label {
-  font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+.pd-meta-bar-item {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--muted);
 }
-.pd-info-value {
-  font-size: 14px; color: var(--fg); letter-spacing: 0.02em;
-}
-.pd-description {
-  font-size: 15px; color: var(--muted); line-height: 1.9;
-  max-width: 680px;
+.pd-meta-bar-dot {
+  color: var(--border);
+  font-size: 14px;
 }
 
 /* 갤러리 */
