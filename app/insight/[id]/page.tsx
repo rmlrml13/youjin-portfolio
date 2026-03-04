@@ -63,9 +63,6 @@ export default async function InsightDetailPage({ params }: { params: { id: stri
         <div className="ins-detail-hero-inner">
           <span className="ins-detail-cat">{insight.category}</span>
           <h1 className="ins-detail-title">{insight.title}</h1>
-          {insight.description && (
-            <p className="ins-detail-desc">{insight.description}</p>
-          )}
         </div>
       </div>
 
@@ -75,12 +72,6 @@ export default async function InsightDetailPage({ params }: { params: { id: stri
           <span className="pd-meta-bar-item">{insight.category}</span>
           <span className="pd-meta-bar-dot">·</span>
           <span className="pd-meta-bar-item">{fmtDate(insight.created_at)}</span>
-          {insight.read_time && (
-            <>
-              <span className="pd-meta-bar-dot">·</span>
-              <span className="pd-meta-bar-item">{insight.read_time}</span>
-            </>
-          )}
           <span className="pd-meta-bar-dot">·</span>
           <span className="pd-meta-bar-item">Views {(insight.view_count ?? 0).toLocaleString()}</span>
         </div>
