@@ -34,14 +34,31 @@ const PortfolioGrid = forwardRef<PortfolioGridHandle, Props>(function PortfolioG
   useEffect(() => { load() }, [])
 
   useEffect(() => {
+    // 커스텀 이벤트 수신
     const handler = (e: Event) => setEditMode((e as CustomEvent).detail.editMode)
     window.addEventListener('edit-mode-change', handler)
+
+    // body class 직접 감시 (LiveEditWrapper와 타이밍 차이 보완)
+    const observer = new MutationObserver(() => {
+      setEditMode(document.body.classList.contains('live-edit-mode'))
+    })
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] })
+
+    // 초기값
     setEditMode(document.body.classList.contains('live-edit-mode'))
-    return () => window.removeEventListener('edit-mode-change', handler)
+
+    return () => {
+      window.removeEventListener('edit-mode-change', handler)
+      observer.disconnect()
+    }
   }, [])
 
   useEffect(() => {
     if (!gridRef.current || loading) return
+    // editMode일 땐 observer 불필요 (visible 클래스를 직접 부여)
+    if (editMode) return
+    // 이미 visible인 항목 초기화 후 재관찰
+    gridRef.current.querySelectorAll('.work-item').forEach(el => el.classList.remove('visible'))
     const observer = new IntersectionObserver(entries => {
       entries.forEach((entry, i) => {
         if (entry.isIntersecting)
@@ -50,13 +67,10 @@ const PortfolioGrid = forwardRef<PortfolioGridHandle, Props>(function PortfolioG
     }, { threshold: 0.05 })
     gridRef.current.querySelectorAll('.work-item').forEach(el => observer.observe(el))
     return () => observer.disconnect()
-  }, [projects, loading])
+  }, [projects, loading, editMode])
 
   function dispatchEdit(project: Project) {
     window.dispatchEvent(new CustomEvent('project-edit', { detail: { action: 'edit', project } }))
-  }
-  function dispatchAdd() {
-    window.dispatchEvent(new CustomEvent('project-edit', { detail: { action: 'add' } }))
   }
 
   const displayed = showAll ? projects : projects.slice(0, HOME_LIMIT)
@@ -84,7 +98,7 @@ const PortfolioGrid = forwardRef<PortfolioGridHandle, Props>(function PortfolioG
           editMode ? (
             <div
               key={p.id}
-              className={`work-item ${p.col_size}`}
+              className={`work-item ${p.col_size} visible`}
               onClick={() => dispatchEdit(p)}
               style={{ cursor:'pointer' }}
             >
@@ -121,21 +135,6 @@ const PortfolioGrid = forwardRef<PortfolioGridHandle, Props>(function PortfolioG
             </Link>
           )
         ))}
-
-        {editMode && !loading && (
-          <div className="work-item col-4" onClick={dispatchAdd} style={{ cursor:'pointer', opacity:1, transform:'none' }}>
-            <div className="work-thumb" style={{ display:'flex', alignItems:'center', justifyContent:'center', background:'#f0f0f0', border:'2px dashed #ccc', position:'relative' }}>
-              <div style={{ textAlign:'center' }}>
-                <div style={{ fontSize:'2rem', color:'#aaa', lineHeight:1 }}>+</div>
-                <span style={{ fontSize:'10px', color:'#aaa', letterSpacing:'0.1em', textTransform:'uppercase' }}>새 프로젝트</span>
-              </div>
-            </div>
-            <div className="work-info">
-              <p className="work-tag" style={{ color:'var(--accent)' }}>추가</p>
-              <h3 className="work-title" style={{ color:'#aaa' }}>New Project</h3>
-            </div>
-          </div>
-        )}
       </div>
 
       {hasMore && !editMode && (

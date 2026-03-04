@@ -3,17 +3,17 @@
 import { useState, useEffect } from 'react'
 import type { Project } from '@/lib/types'
 import type { PortfolioGridHandle } from './PortfolioGrid'
-import PortfolioEditPanel from './PortfolioEditPanel'
+import QuickEditPanel, { type QuickEditTarget } from '@/components/live-edit/QuickEditPanel'
 
 interface Props {
   gridRef: React.RefObject<PortfolioGridHandle>
 }
 
 export default function PortfolioLiveEditor({ gridRef }: Props) {
-  const [editMode, setEditMode]             = useState(false)
-  const [panelOpen, setPanelOpen]           = useState(false)
-  const [editingProject, setEditingProject] = useState<Project | null>(null)
-  const [token, setToken]                   = useState('')
+  const [editMode,  setEditMode]  = useState(false)
+  const [panelOpen, setPanelOpen] = useState(false)
+  const [target,    setTarget]    = useState<QuickEditTarget | null>(null)
+  const [token,     setToken]     = useState('')
 
   useEffect(() => {
     setToken(localStorage.getItem('youjin_token') ?? '')
@@ -21,14 +21,21 @@ export default function PortfolioLiveEditor({ gridRef }: Props) {
       setEditMode(document.body.classList.contains('live-edit-mode'))
     })
     observer.observe(document.body, { attributes: true, attributeFilter: ['class'] })
+    setEditMode(document.body.classList.contains('live-edit-mode'))
     return () => observer.disconnect()
   }, [])
 
   useEffect(() => {
     const handler = (e: Event) => {
-      const { action, project } = (e as CustomEvent).detail
-      if (action === 'edit') { setEditingProject(project); setPanelOpen(true) }
-      if (action === 'add')  { setEditingProject(null);    setPanelOpen(true) }
+      const project = (e as CustomEvent<{ project: Project }>).detail.project
+      setTarget({
+        type:      'project',
+        id:        project.id,
+        title:     project.title,
+        tag:       project.tag,
+        thumbnail: project.image_url ?? '',
+      })
+      setPanelOpen(true)
     }
     window.addEventListener('project-edit', handler)
     return () => window.removeEventListener('project-edit', handler)
@@ -38,23 +45,16 @@ export default function PortfolioLiveEditor({ gridRef }: Props) {
     window.dispatchEvent(new CustomEvent('edit-mode-change', { detail: { editMode } }))
   }, [editMode])
 
-  if (!editMode && !panelOpen) return null
-
   return (
     <>
-      {panelOpen && (
-        <PortfolioEditPanel
-          project={editingProject}
+      {panelOpen && target && (
+        <QuickEditPanel
+          target={target}
           token={token}
           onSaved={() => {
             setPanelOpen(false)
             gridRef.current?.reload()
-            window.dispatchEvent(new CustomEvent('show-toast', { detail: { msg: '✓ 프로젝트 저장 완료' } }))
-          }}
-          onDeleted={() => {
-            setPanelOpen(false)
-            gridRef.current?.reload()
-            window.dispatchEvent(new CustomEvent('show-toast', { detail: { msg: '✓ 프로젝트 삭제 완료' } }))
+            window.dispatchEvent(new CustomEvent('show-toast', { detail: { msg: '✓ 저장 완료' } }))
           }}
           onClose={() => setPanelOpen(false)}
         />

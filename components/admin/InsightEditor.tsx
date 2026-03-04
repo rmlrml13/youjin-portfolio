@@ -74,9 +74,8 @@ export default function InsightEditor({ selectedInsight, isCreating, token, insi
     if (!form.category || !form.title) { alert('카테고리와 제목은 필수입니다.'); return }
     setSaving(true)
 
-    let thumbnail_url = imagePreview.startsWith('data:') || !imagePreview
-      ? (imagePreview ? undefined : '')
-      : imagePreview
+    // 썸네일 URL 결정: 새 파일 업로드 → 기존 URL 유지 → 제거된 경우 빈 문자열
+    let thumbnail_url: string = imagePreview  // 기본값: 현재 미리보기 (기존 URL 또는 '')
 
     if (imageFile) {
       const fd = new FormData()
@@ -86,7 +85,8 @@ export default function InsightEditor({ selectedInsight, isCreating, token, insi
         headers: { Authorization: `Bearer ${token}` },
         body: fd,
       })
-      if (uploadRes.ok) thumbnail_url = (await uploadRes.json()).url
+      if (!uploadRes.ok) { setSaving(false); alert('이미지 업로드 실패'); return }
+      thumbnail_url = (await uploadRes.json()).url
     }
 
     const isEdit = !!selectedInsight
@@ -94,7 +94,7 @@ export default function InsightEditor({ selectedInsight, isCreating, token, insi
       category:      form.category,
       title:         form.title,
       content_html:  htmlRef.current,
-      thumbnail_url: thumbnail_url ?? '',
+      thumbnail_url,
     }
 
     const res = await fetch(
