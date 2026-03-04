@@ -63,8 +63,8 @@ export interface SiteConfig {
   about_skills: string    // 콤마 구분 문자열 — 렌더링 시 split(',') 필요
   contact_email: string
   contact_instagram: string
-  contact_behance: string
-  contact_linkedin: string
+  contact_blog: string
+  contact_kakaotalk: string
   footer_name: string
   footer_region: string
 }
@@ -80,8 +80,8 @@ export const DEFAULT_CONFIG: SiteConfig = {
   about_skills:      'Branding,Editorial,UI Design,Illustration,Typography,Motion,Art Direction',
   contact_email:     'hello@youjin.com',
   contact_instagram: '#',
-  contact_behance:   '#',
-  contact_linkedin:  '#',
+  contact_blog:      '#',
+  contact_kakaotalk: '#',
   footer_name:       'Youjin',
   footer_region:     'Seoul, Korea',
 }

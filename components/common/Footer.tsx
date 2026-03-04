@@ -8,8 +8,8 @@ export default function Footer({ config }: Props) {
 
   const links = [
     { label: 'Instagram', href: config.contact_instagram },
-    { label: 'Behance',   href: config.contact_behance   },
-    { label: 'LinkedIn',  href: config.contact_linkedin   },
+    { label: 'Blog',   href: config.contact_blog   },
+    { label: 'KakaoTalk',  href: config.contact_kakaotalk   },
     { label: config.contact_email, href: `mailto:${config.contact_email}` },
   ]
 
