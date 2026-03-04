@@ -29,6 +29,20 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ error: '프로젝트를 찾을 수 없습니다' }, { status: 404 })
   }
 
+  // 이미지 명시적 제거
+  const image_url_override = formData.get('image_url') as string | null
+  if (image_url_override === '') {
+    // 기존 이미지 Storage 삭제
+    if (existing.image_url?.includes('portfolio-images')) {
+      const match = existing.image_url.match(/portfolio-images\/(.+)$/)
+      const oldPath = match?.[1]
+      if (oldPath) await supabase.storage.from('portfolio-images').remove([oldPath])
+    }
+    const { data, error } = await supabase.from('projects').update({ title: title || existing.title, tag: tag || existing.tag, image_url: '', col_size: col_size || existing.col_size, sort_order: sort_order ?? existing.sort_order }).eq('id', params.id).select().single()
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json(data)
+  }
+
   // 새 이미지가 있으면 업로드
   let image_url = existing.image_url
   if (imageFile && imageFile.size > 0) {

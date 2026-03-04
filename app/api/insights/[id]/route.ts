@@ -11,7 +11,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (authError) return authError
 
   const body = await req.json()
-  const { category, title, description, date, read_time, sort_order } = body
+  const { category, title, sort_order, content_html, thumbnail_url } = body
 
   const { data: existing, error: fetchError } = await supabase
     .from('insights')
@@ -26,12 +26,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   const { data, error } = await supabase
     .from('insights')
     .update({
-      category:   category   ?? existing.category,
-      title:      title      ?? existing.title,
-      description: description ?? existing.description,
-      date:       date       ?? existing.date,
-      read_time:  read_time  ?? existing.read_time,
-      sort_order: sort_order ?? existing.sort_order,
+      category:     category     ?? existing.category,
+      title:        title        ?? existing.title,
+      sort_order:   sort_order   ?? existing.sort_order,
+      content_html:  content_html  !== undefined ? content_html  : existing.content_html,
+      thumbnail_url: thumbnail_url !== undefined ? thumbnail_url : existing.thumbnail_url,
     })
     .eq('id', params.id)
     .select()

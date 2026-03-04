@@ -179,7 +179,7 @@ export default function LiveEditWrapper({ initialConfig }: Props) {
         </div>
       </div>
 
-      <div style={{ height: 38 }} />
+      {/* 편집 바 높이만큼 body padding-top으로 처리 — 별도 div 불필요 */}
 
       {/* 텍스트/이미지 팝업 */}
       {popup && (

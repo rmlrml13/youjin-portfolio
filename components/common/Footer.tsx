@@ -58,16 +58,7 @@ export default function Footer({ config }: Props) {
       {/* 하단: 카피라이트 + 지역 */}
       <div className="footer-bottom">
         <span suppressHydrationWarning className="footer-copy">
-          © {currentYear}{' '}
-          <span
-            className="editable-field"
-            data-edit="footer_name"
-            data-label="이름"
-            data-type="text"
-          >
-            {config.footer_name}
-          </span>
-          . All rights reserved.
+          © {currentYear} {config.footer_name}. All rights reserved.
         </span>
         <span
           className="footer-region editable-field"

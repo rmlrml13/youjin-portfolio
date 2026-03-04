@@ -21,8 +21,8 @@ export default async function HomePage() {
       {/* Tagline */}
       <div className="tagline-section">
         <h2>Design for Impact!</h2>
-        <p className="editable-field" data-edit="hero_desc" data-label="tagline 문구" data-type="textarea">
-          {config.hero_desc}
+        <p className="editable-field" data-edit="tagline_desc" data-label="tagline 문구" data-type="textarea">
+          {config.tagline_desc}
         </p>
       </div>
 

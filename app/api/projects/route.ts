@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   const sort_order = Number(formData.get('sort_order') || 0)
   const imageFile = formData.get('image') as File | null
 
-  if (!title || !tag || !year) {
+  if (!title || !tag) {
     return NextResponse.json({ error: '필수 항목 누락' }, { status: 400 })
   }
 

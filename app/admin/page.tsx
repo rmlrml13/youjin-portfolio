@@ -117,6 +117,33 @@ export default function AdminPage() {
     setIsCreatingInsight(false)
   }
 
+  /* ── 드래그 앤 드롭 순서 저장 ── */
+  async function handleReorderProjects(reordered: Project[]) {
+    setProjects(reordered)
+    await Promise.all(
+      reordered.map((p, i) =>
+        fetch(`/api/projects/${p.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ sort_order: i }),
+        })
+      )
+    )
+  }
+
+  async function handleReorderInsights(reordered: Insight[]) {
+    setInsights(reordered)
+    await Promise.all(
+      reordered.map((ins, i) =>
+        fetch(`/api/insights/${ins.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ sort_order: i }),
+        })
+      )
+    )
+  }
+
   function handleInsightDeleted() {
     showToast('✓ 삭제 완료')
     setSelectedInsight(null); setIsCreatingInsight(false)
@@ -168,6 +195,8 @@ export default function AdminPage() {
           onSelectInsight={selectInsight}
           onDeleteProject={deleteProject}
           onNew={mainTab === 'projects' ? newProject : newInsight}
+          onReorderProjects={handleReorderProjects}
+          onReorderInsights={handleReorderInsights}
         />
 
         <main style={{ display:'flex', flexDirection:'column', overflow:'hidden' }}>
@@ -177,6 +206,7 @@ export default function AdminPage() {
               selectedProject={selectedProject}
               isCreating={isCreatingProject}
               token={token}
+              projects={projects}
               onSaved={handleProjectSaved}
               onDeleted={deleteProject}
             />
@@ -187,6 +217,7 @@ export default function AdminPage() {
               selectedInsight={selectedInsight}
               isCreating={isCreatingInsight}
               token={token}
+              insights={insights}
               onSaved={(saved, isNew) => handleInsightSaved(saved, isNew)}
               onDeleted={handleInsightDeleted}
             />

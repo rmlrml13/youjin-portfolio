@@ -25,15 +25,15 @@ export async function POST(req: NextRequest) {
   if (authError) return authError
 
   const body = await req.json()
-  const { category, title, description, date, read_time, sort_order } = body
+  const { category, title, sort_order, content_html, thumbnail_url } = body
 
-  if (!category || !title || !description || !date) {
+  if (!category || !title) {
     return NextResponse.json({ error: '필수 항목 누락' }, { status: 400 })
   }
 
   const { data, error } = await supabase
     .from('insights')
-    .insert([{ category, title, description, date, read_time: read_time || '', sort_order: sort_order ?? 0 }])
+    .insert([{ category, title, sort_order: sort_order ?? 0, content_html: content_html ?? '', thumbnail_url: thumbnail_url ?? '' }])
     .select()
     .single()
 

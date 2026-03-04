@@ -1,12 +1,11 @@
 // app/insight/[id]/page.tsx
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
 import Link from 'next/link'
 import Header from '@/components/common/Header'
 import Footer from '@/components/common/Footer'
 import { getSiteConfig } from '@/lib/config'
 import { supabase } from '@/lib/supabase'
-import type { Insight, InsightBlock } from '@/lib/types'
+import type { Insight } from '@/lib/types'
 import InsightViewTracker from '@/components/insight/InsightViewTracker'
 
 export const dynamic = 'force-dynamic'
@@ -17,13 +16,6 @@ async function getInsight(id: string): Promise<Insight | null> {
     .from('insights').select('*').eq('id', id).single()
   if (error || !data) return null
   return data
-}
-
-async function getBlocks(id: string): Promise<InsightBlock[]> {
-  const { data } = await supabase
-    .from('insight_blocks').select('*').eq('insight_id', id)
-    .order('sort_order', { ascending: true }).order('id', { ascending: true })
-  return data ?? []
 }
 
 async function getAdjacentInsights(currentId: number) {
@@ -52,56 +44,54 @@ function fmtDate(iso?: string) {
 }
 
 export default async function InsightDetailPage({ params }: { params: { id: string } }) {
-  const [insight, blocks, config] = await Promise.all([
+  const [insight, config] = await Promise.all([
     getInsight(params.id),
-    getBlocks(params.id),
     getSiteConfig(),
   ])
   if (!insight) notFound()
 
   const { prev, next } = await getAdjacentInsights(insight.id)
+  const contentHtml = (insight as any).content_html ?? ''
 
   return (
-    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header name={config.hero_name} />
       <InsightViewTracker insightId={insight.id} />
 
-      {/* ── 히어로 ── */}
+      {/* 히어로 */}
       <div className="ins-detail-hero">
         <div className="ins-detail-hero-inner">
           <span className="ins-detail-cat">{insight.category}</span>
           <h1 className="ins-detail-title">{insight.title}</h1>
-          <p className="ins-detail-desc">{insight.description}</p>
+          {insight.description && (
+            <p className="ins-detail-desc">{insight.description}</p>
+          )}
         </div>
       </div>
 
-      {/* ── 메타 바 ── */}
+      {/* 메타 바 */}
       <div className="pd-meta-bar">
         <div className="pd-meta-bar-inner">
           <span className="pd-meta-bar-item">{insight.category}</span>
           <span className="pd-meta-bar-dot">·</span>
           <span className="pd-meta-bar-item">{fmtDate(insight.created_at)}</span>
-          <span className="pd-meta-bar-dot">·</span>
           {insight.read_time && (
             <>
-              <span className="pd-meta-bar-item">{insight.read_time}</span>
               <span className="pd-meta-bar-dot">·</span>
+              <span className="pd-meta-bar-item">{insight.read_time}</span>
             </>
           )}
+          <span className="pd-meta-bar-dot">·</span>
           <span className="pd-meta-bar-item">Views {(insight.view_count ?? 0).toLocaleString()}</span>
         </div>
       </div>
 
-      {/* ── 블록 콘텐츠 ── */}
-      {blocks.length > 0 && (
-        <article className="pd-blocks">
-          {blocks.map(block => (
-            <BlockRenderer key={block.id} block={block} title={insight.title} />
-          ))}
-        </article>
+      {/* 본문 — TipTap HTML 렌더링 */}
+      {contentHtml && (
+        <article className="pd-blocks insight-body" dangerouslySetInnerHTML={{ __html: contentHtml }} />
       )}
 
-      {/* ── 이전 / 다음 ── */}
+      {/* 이전 / 다음 */}
       <nav className="pd-nav">
         <div className="pd-nav-inner">
           {prev
@@ -122,45 +112,8 @@ export default async function InsightDetailPage({ params }: { params: { id: stri
         </div>
       </nav>
 
-      <div style={{ flex:1 }} />
+      <div style={{ flex: 1 }} />
       <Footer config={config} />
     </div>
   )
-}
-
-function BlockRenderer({ block, title }: { block: InsightBlock; title: string }) {
-  switch (block.type) {
-    case 'heading':
-      return (
-        <div className="pd-block pd-block-heading">
-          <h2 className="pd-block-h">{block.content}</h2>
-        </div>
-      )
-    case 'text':
-      return (
-        <div className="pd-block pd-block-text">
-          {block.content.split('\n').map((line, i) =>
-            line.trim()
-              ? <p key={i} className="pd-block-p">{line}</p>
-              : <br key={i} />
-          )}
-        </div>
-      )
-    case 'image':
-      return (
-        <div className="pd-block pd-block-image">
-          <div className="pd-block-img-wrap">
-            <Image src={block.image_url} alt={title} fill style={{ objectFit:'cover' }} />
-          </div>
-        </div>
-      )
-    case 'divider':
-      return (
-        <div className="pd-block pd-block-divider">
-          <hr className="pd-block-hr" />
-        </div>
-      )
-    default:
-      return null
-  }
 }

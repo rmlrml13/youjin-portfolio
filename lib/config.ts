@@ -30,7 +30,10 @@ export async function getSiteConfig(): Promise<SiteConfig> {
     }, {} as Record<string, string>)
 
     return { ...DEFAULT_CONFIG, ...config } as SiteConfig
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[getSiteConfig] Supabase 연결 실패, DEFAULT_CONFIG 사용:', err)
+    }
     return DEFAULT_CONFIG
   }
 }

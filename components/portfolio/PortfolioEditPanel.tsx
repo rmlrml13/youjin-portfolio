@@ -22,7 +22,6 @@ export default function PortfolioEditPanel({ project, token, onSaved, onDeleted,
     title:       project?.title       ?? '',
     tag:         project?.tag         ?? '',
     sort_order:  project?.sort_order  ?? 0,
-    description: project?.description ?? '',
   })
   const [imageFile, setImageFile]       = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState(project?.image_url ?? '')
@@ -36,7 +35,6 @@ export default function PortfolioEditPanel({ project, token, onSaved, onDeleted,
       title:       project?.title       ?? '',
       tag:         project?.tag         ?? '',
       sort_order:  project?.sort_order  ?? 0,
-      description: project?.description ?? '',
     })
     setImageFile(null)
     setImagePreview(project?.image_url ?? '')
@@ -163,16 +161,6 @@ export default function PortfolioEditPanel({ project, token, onSaved, onDeleted,
                     onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} />
                 </div>
               ))}
-
-              <div style={{ marginBottom:'1rem' }}>
-                <label style={ls.label}>프로젝트 설명</label>
-                <textarea
-                  style={{ ...ls.input, height:'80px', resize:'vertical' as const }}
-                  placeholder="상세 페이지 상단에 표시되는 소개글"
-                  value={form.description}
-                  onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
-                />
-              </div>
 
               <div style={{ marginBottom:'2rem' }}>
                 <label style={ls.label}>정렬 순서</label>

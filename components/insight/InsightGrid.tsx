@@ -63,16 +63,19 @@ export default function InsightGrid() {
         )}
         {paginated.map(post => (
           <a key={post.id} href={`/insight/${post.id}`} className="ins-card ins-card--page">
-            <div className="ins-card-thumb">
-              <span className="ins-card-cat">{post.category}</span>
+            <div className="ins-card-thumb" style={{ background: post.thumbnail_url ? 'transparent' : '#ECEAE4', overflow: 'hidden', position: 'relative' }}>
+              {post.thumbnail_url
+                ? <img src={post.thumbnail_url} alt={post.title} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+                : null
+              }
+              <span className="ins-card-cat" style={{ position: 'relative', zIndex: 1 }}>{post.category}</span>
             </div>
             <div className="ins-card-body">
               <h3 className="ins-card-title">{post.title}</h3>
-              <p className="ins-card-desc">{post.description}</p>
             </div>
             <div className="ins-card-foot">
-              <span className="ins-card-date">{post.date}</span>
-              <span className="ins-card-read">{post.read_time}</span>
+              <span className="ins-card-date">{post.created_at ? new Date(post.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' }).replace(/\. /g,'.').replace(/\.$/,'') : '—'}</span>
+              <span className="ins-card-read">{(post.view_count ?? 0).toLocaleString()} views</span>
             </div>
           </a>
         ))}
