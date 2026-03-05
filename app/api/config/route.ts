@@ -30,29 +30,17 @@ export async function PUT(req: NextRequest) {
   // 1) 먼저 행이 있는지 확인
   // 2) 있으면 update, 없으면 insert — 빈 문자열도 확실하게 저장
   const results = await Promise.all(
-    Object.entries(body).map(async ([key, value]) => {
-      const { data: existing } = await supabase
+    Object.entries(body).map(([key, value]) =>
+      supabase
         .from('site_config')
-        .select('key')
-        .eq('key', key)
-        .maybeSingle()
-
-      if (existing) {
-        return supabase
-          .from('site_config')
-          .update({ value })
-          .eq('key', key)
-      } else {
-        return supabase
-          .from('site_config')
-          .insert({ key, value })
-      }
-    })
+        .upsert({ key, value }, { onConflict: 'key' })
+    )
   )
 
   const failed = results.find(r => r.error)
   if (failed?.error) {
-    return NextResponse.json({ error: failed.error.message }, { status: 500 })
+    console.error('[config PUT] Supabase error:', failed.error)
+    return NextResponse.json({ error: failed.error.message, details: failed.error }, { status: 500 })
   }
 
   return NextResponse.json({ message: '저장 완료' })

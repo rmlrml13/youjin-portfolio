@@ -1,6 +1,7 @@
 // app/portfolio/page.tsx
 import Header               from '@/components/common/Header'
 import Footer               from '@/components/common/Footer'
+import PageHero             from '@/components/common/PageHero'
 import PortfolioFilterClient from '@/components/portfolio/PortfolioFilterClient'
 import { getSiteConfig }    from '@/lib/config'
 
@@ -17,13 +18,13 @@ export default async function PortfolioPage() {
   return (
     <>
       <Header name={config.hero_name} />
-      <div className="page-hero">
-        <div className="page-hero-inner">
-          <p className="page-hero-label">Works</p>
-          <h1 className="page-hero-title">Portfolio</h1>
-          <p className="page-hero-desc">All projects, sorted by latest.</p>
-        </div>
-      </div>
+      <PageHero
+        label="Works" title="Portfolio" desc="All projects, sorted by latest."
+        configKey="portfolio_hero_image_url"
+        initialImageUrl={config.portfolio_hero_image_url ?? ''}
+        posKey="portfolio_hero_text_pos"
+        initialPos={config.portfolio_hero_text_pos ?? ''}
+      />
       <PortfolioFilterClient />
       <Footer config={config} />
     </>

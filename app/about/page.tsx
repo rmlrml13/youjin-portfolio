@@ -1,6 +1,7 @@
 // app/about/page.tsx
-import Header  from '@/components/common/Header'
-import Footer  from '@/components/common/Footer'
+import Header   from '@/components/common/Header'
+import Footer   from '@/components/common/Footer'
+import PageHero from '@/components/common/PageHero'
 import { getSiteConfig } from '@/lib/config'
 
 export const dynamic = 'force-dynamic'
@@ -19,13 +20,13 @@ export default async function AboutPage() {
   return (
     <>
       <Header name={config.hero_name} />
-      <div className="page-hero">
-        <div className="page-hero-inner">
-          <p className="page-hero-label">About</p>
-          <h1 className="page-hero-title">About</h1>
-          <p className="page-hero-desc">what i think, what i pursue</p>
-        </div>
-      </div>
+      <PageHero
+        label="About" title="About" desc="what i think, what i pursue"
+        configKey="about_hero_image_url"
+        initialImageUrl={config.about_hero_image_url ?? ''}
+        posKey="about_hero_text_pos"
+        initialPos={config.about_hero_text_pos ?? ''}
+      />
 
       <section className="about-simple-section">
         <div className="about-simple-inner">

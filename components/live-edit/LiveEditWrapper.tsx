@@ -1,8 +1,9 @@
 'use client'
 // components/LiveEditWrapper.tsx
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import type { SiteConfig } from '@/lib/types'
-import LiveEditPopup from './LiveEditPopup' // same folder
+import LiveEditPopup from './LiveEditPopup'
 
 interface Props {
   initialConfig: SiteConfig
@@ -11,6 +12,7 @@ interface Props {
 type PopupType = 'text' | 'textarea' | 'skills' | 'image'
 
 export default function LiveEditWrapper({ initialConfig }: Props) {
+  const router = useRouter()
   const [mounted, setMounted]   = useState(false)
   const [isAdmin, setIsAdmin]   = useState(false)
   const [editMode, setEditMode] = useState(false)
@@ -165,15 +167,25 @@ export default function LiveEditWrapper({ initialConfig }: Props) {
           <a href="/admin" style={{ color:'rgba(255,255,255,0.4)', fontSize:'10px', letterSpacing:'0.08em', textDecoration:'none', textTransform:'uppercase', padding:'0.35rem 0.8rem' }}>
             관리자
           </a>
-          <button onClick={() => setEditMode(m => !m)} style={{
-            padding:'0.35rem 1rem',
-            background: editMode ? 'transparent' : '#C8B89A',
-            color: editMode ? '#C8B89A' : '#1A1A18',
-            fontFamily:'DM Mono, monospace', fontSize:'10px',
-            letterSpacing:'0.1em', textTransform:'uppercase',
-            border: editMode ? '1px solid #C8B89A' : 'none',
-            cursor:'pointer', transition:'all 0.2s',
-          }}>
+          <button
+            onClick={() => {
+              if (editMode) {
+                setEditMode(false)
+                router.refresh()
+              } else {
+                setEditMode(true)
+              }
+            }}
+            style={{
+              padding:'0.35rem 1rem',
+              background: editMode ? 'transparent' : '#C8B89A',
+              color: editMode ? '#C8B89A' : '#1A1A18',
+              fontFamily:'DM Mono, monospace', fontSize:'10px',
+              letterSpacing:'0.1em', textTransform:'uppercase',
+              border: editMode ? '1px solid #C8B89A' : 'none',
+              cursor:'pointer', transition:'all 0.2s',
+            }}
+          >
             {editMode ? '편집 종료' : '✏ 라이브 편집'}
           </button>
         </div>

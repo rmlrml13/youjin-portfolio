@@ -1,6 +1,7 @@
 // app/insight/page.tsx
 import Header      from '@/components/common/Header'
 import Footer      from '@/components/common/Footer'
+import PageHero    from '@/components/common/PageHero'
 import InsightGrid from '@/components/insight/InsightGrid'
 import { getSiteConfig } from '@/lib/config'
 
@@ -16,13 +17,13 @@ export default async function InsightPage() {
   return (
     <>
       <Header name={config.hero_name} />
-      <div className="page-hero">
-        <div className="page-hero-inner">
-          <p className="page-hero-label">Writing</p>
-          <h1 className="page-hero-title">Insight</h1>
-          <p className="page-hero-desc">디자인, 프로세스, 그리고 생각들을 기록합니다.</p>
-        </div>
-      </div>
+      <PageHero
+        label="Writing" title="Insight" desc="디자인, 프로세스, 그리고 생각들을 기록합니다."
+        configKey="insight_hero_image_url"
+        initialImageUrl={config.insight_hero_image_url ?? ''}
+        posKey="insight_hero_text_pos"
+        initialPos={config.insight_hero_text_pos ?? ''}
+      />
       <section className="ins-page-section">
         <InsightGrid />
       </section>
