@@ -38,7 +38,8 @@ export default function Header({ name }: Props) {
           <Link href="/portfolio" className={isPortfolio ? 'nav-active' : ''}>Portfolio</Link>
           <Link href="/insight"   className={isInsight   ? 'nav-active' : ''}>Insight</Link>
           <Link href="/about"     className={isAbout     ? 'nav-active' : ''}>About</Link>
-          <Link href="/contact"   className={`nav-cta${isContact ? ' nav-active' : ''}`}>상담신청</Link>
+          {/*<Link href="/contact"   className={`nav-cta${isContact ? ' nav-active' : ''}`}>상담신청</Link>*/}
+          <Link href="#"   className={`nav-cta${isContact ? ' nav-active' : ''}`}>상담신청</Link>
         </nav>
 
         <button
