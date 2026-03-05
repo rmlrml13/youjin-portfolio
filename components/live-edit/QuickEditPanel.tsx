@@ -166,12 +166,26 @@ export default function QuickEditPanel({ target, token, onSaved, onClose }: Prop
 
         </div>
 
-        {/* 저장 버튼 */}
-        <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #E0DED8', flexShrink: 0 }}>
+        {/* 하단 버튼 영역 */}
+        <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #E0DED8', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <button onClick={handleSave} disabled={saving}
             style={{ width: '100%', padding: '0.8rem', background: '#1A1A18', color: '#fff', fontFamily: 'DM Mono, monospace', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', border: 'none', cursor: 'pointer', opacity: saving ? 0.6 : 1 }}>
             {saving ? '저장 중...' : '저장'}
           </button>
+        </div>
+
+        {/* 관리자 페이지 안내 */}
+        <div style={{ padding: '0.75rem 1.5rem', borderTop: '1px solid #E0DED8', flexShrink: 0, background: '#F5F4F0', textAlign: 'center' }}>
+          <p style={{ margin: 0, fontSize: '11px', color: '#888880', letterSpacing: '0.04em' }}>
+            콘텐츠 편집은{' '}
+            <a
+              href="/admin"
+              style={{ color: '#A0845C', fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: '3px', cursor: 'pointer' }}
+            >
+              관리자 페이지
+            </a>
+            에서 가능합니다.
+          </p>
         </div>
       </div>
     </>
