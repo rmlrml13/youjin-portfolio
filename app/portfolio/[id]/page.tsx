@@ -62,8 +62,8 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
 
       {/* ── 히어로 ── */}
       <div className="pd-hero">
-        {project.image_url
-          ? <Image src={project.image_url} alt={project.title} fill priority style={{ objectFit:'cover' }} />
+        {(config.portfolio_hero_image_url || project.image_url)
+          ? <Image src={config.portfolio_hero_image_url || project.image_url} alt={project.title} fill priority style={{ objectFit:'cover' }} />
           : <div className="pd-hero-placeholder" />
         }
         <div className="pd-hero-overlay" />

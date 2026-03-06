@@ -1,7 +1,8 @@
 // app/about/page.tsx
-import Header   from '@/components/common/Header'
-import Footer   from '@/components/common/Footer'
-import PageHero from '@/components/common/PageHero'
+import Header         from '@/components/common/Header'
+import Footer         from '@/components/common/Footer'
+import PageHero       from '@/components/common/PageHero'
+import LiveEditWrapper from '@/components/live-edit/LiveEditWrapper'
 import { getSiteConfig } from '@/lib/config'
 
 export const dynamic = 'force-dynamic'
@@ -19,13 +20,16 @@ export default async function AboutPage() {
 
   return (
     <>
+      <LiveEditWrapper initialConfig={config} />
       <Header name={config.hero_name} />
       <PageHero
-        label="About" title="About" desc="what i think, what i pursue"
+        label="About"
+        title={config.about_hero_title || 'About'}
+        desc={config.about_hero_desc || 'what i think, what i pursue'}
         configKey="about_hero_image_url"
         initialImageUrl={config.about_hero_image_url ?? ''}
-        posKey="about_hero_text_pos"
-        initialPos={config.about_hero_text_pos ?? ''}
+        titleKey="about_hero_title"
+        descKey="about_hero_desc"
       />
 
       <section className="about-simple-section">

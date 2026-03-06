@@ -1,7 +1,5 @@
-'use client'
 // components/common/PageHero.tsx
 import HeroImageEdit from '@/components/live-edit/HeroImageEdit'
-import DraggableItem from '@/components/live-edit/DraggableItem'
 
 interface Props {
   label: string
@@ -9,21 +7,35 @@ interface Props {
   desc: string
   configKey: string
   initialImageUrl: string
-  posKey: string
-  initialPos: string
+  titleKey?: string   // config key for title (editable)
+  descKey?: string    // config key for desc (editable)
+  posKey?: string
+  initialPos?: string
 }
 
-export default function PageHero({ label, title, desc, configKey, initialImageUrl, posKey, initialPos }: Props) {
+export default function PageHero({
+  label, title, desc,
+  configKey, initialImageUrl,
+  titleKey, descKey,
+}: Props) {
   return (
-    <div className="page-hero" style={{ position: 'relative' }} data-hero-container>
+    <div className="page-hero" style={{ position: 'relative' }}>
       <HeroImageEdit configKey={configKey} initialUrl={initialImageUrl}>
-        <DraggableItem posKey={posKey} initialPos={initialPos}>
-          <div className="page-hero-inner" style={{ position: 'static' }}>
-            <p className="page-hero-label">{label}</p>
-            <h1 className="page-hero-title">{title}</h1>
-            <p className="page-hero-desc">{desc}</p>
-          </div>
-        </DraggableItem>
+        <div className="page-hero-inner">
+          <p className="page-hero-label">{label}</p>
+          <h1
+            className={`page-hero-title${titleKey ? ' editable-field' : ''}`}
+            {...(titleKey ? { 'data-edit': titleKey, 'data-label': 'Hero 타이틀', 'data-type': 'text' } : {})}
+          >
+            {title}
+          </h1>
+          <p
+            className={`page-hero-desc${descKey ? ' editable-field' : ''}`}
+            {...(descKey ? { 'data-edit': descKey, 'data-label': 'Hero 설명', 'data-type': 'textarea' } : {})}
+          >
+            {desc}
+          </p>
+        </div>
       </HeroImageEdit>
     </div>
   )

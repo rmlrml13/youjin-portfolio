@@ -1,10 +1,17 @@
 'use client'
 // components/live-edit/DraggableItem.tsx
+// 브레이크포인트별 위치 저장 (lg / md / sm)
 import { useState, useEffect, useRef, useCallback } from 'react'
 
+type BP = 'lg' | 'md' | 'sm'
+
 interface Props {
-  posKey: string
-  initialPos?: string  // "x,y" (%)
+  posKey: string           // 기본 키 (lg)
+  posKeyMd?: string        // md 키
+  posKeySm?: string        // sm 키
+  initialPos?:   string    // lg 위치 "x,y"
+  initialPosMd?: string    // md 위치
+  initialPosSm?: string    // sm 위치
   children: React.ReactNode
 }
 
@@ -17,37 +24,66 @@ function parsePos(s?: string): Pos {
   return { x, y }
 }
 
-async function savePos(posKey: string, x: number, y: number) {
+function getBP(): BP {
+  const w = window.innerWidth
+  if (w >= 1024) return 'lg'
+  if (w >= 768)  return 'md'
+  return 'sm'
+}
+
+// 컨테이너 기준 % 계산
+function toContainerPct(clientX: number, clientY: number, rect: DOMRect, offsetDx: number, offsetDy: number) {
+  const cx = clientX - offsetDx
+  const cy = clientY - offsetDy
+  return {
+    x: Math.round(Math.max(1, Math.min(99, ((cx - rect.left) / rect.width)  * 100)) * 10) / 10,
+    y: Math.round(Math.max(1, Math.min(99, ((cy - rect.top)  / rect.height) * 100)) * 10) / 10,
+  }
+}
+
+async function savePos(key: string, x: number, y: number) {
   const token = localStorage.getItem('youjin_token') ?? ''
-  console.log('[DraggableItem] saving', posKey, x, y)
   const res = await fetch('/api/config', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ [posKey]: `${x},${y}` }),
+    body: JSON.stringify({ [key]: `${x},${y}` }),
   })
-  const json = await res.json()
-  console.log('[DraggableItem] save result', res.status, JSON.stringify(json))
   return res.ok
 }
 
-export default function DraggableItem({ posKey, initialPos, children }: Props) {
+// 현재 브레이크포인트에 맞는 위치 — 없으면 상위 BP 폴백
+function resolvePos(bp: BP, lg: Pos, md: Pos, sm: Pos): Pos {
+  if (bp === 'sm') return sm ?? md ?? lg
+  if (bp === 'md') return md ?? lg
+  return lg
+}
+
+export default function DraggableItem({
+  posKey, posKeyMd, posKeySm,
+  initialPos, initialPosMd, initialPosSm,
+  children,
+}: Props) {
   const [editMode,   setEditMode]   = useState(false)
-  const [pos,        setPos]        = useState<Pos>(() => parsePos(initialPos))
+  const [bp,         setBp]         = useState<BP>('lg')
   const [isDragging, setIsDragging] = useState(false)
   const [saved,      setSaved]      = useState(false)
+
+  // 브레이크포인트별 위치 state
+  const [posLg, setPosLg] = useState<Pos>(() => parsePos(initialPos))
+  const [posMd, setPosMd] = useState<Pos>(() => parsePos(initialPosMd))
+  const [posSm, setPosSm] = useState<Pos>(() => parsePos(initialPosSm))
 
   const wrapRef    = useRef<HTMLDivElement>(null)
   const containerR = useRef<HTMLElement | null>(null)
   const dragging   = useRef(false)
-  const curPos     = useRef<Pos>(parsePos(initialPos))  // 드래그 중 최신 위치
+  const curPos     = useRef<Pos>(null)
   const dragOffset = useRef({ dx: 0, dy: 0 })
+  const bpRef      = useRef<BP>('lg')
 
-  // initialPos prop 변경 시 동기화 (router.refresh 후)
-  useEffect(() => {
-    const p = parsePos(initialPos)
-    curPos.current = p
-    setPos(p)
-  }, [initialPos])
+  // initialPos 변경 시 동기화
+  useEffect(() => { setPosLg(parsePos(initialPos)) },   [initialPos])
+  useEffect(() => { setPosMd(parsePos(initialPosMd)) }, [initialPosMd])
+  useEffect(() => { setPosSm(parsePos(initialPosSm)) }, [initialPosSm])
 
   // editMode 감지
   useEffect(() => {
@@ -58,30 +94,56 @@ export default function DraggableItem({ posKey, initialPos, children }: Props) {
     return () => obs.disconnect()
   }, [])
 
+  // 브레이크포인트 감지
+  useEffect(() => {
+    const update = () => {
+      const next = getBP()
+      setBp(next)
+      bpRef.current = next
+    }
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+
+  // 현재 BP의 키
+  function currentKey(): string {
+    if (bp === 'sm' && posKeySm) return posKeySm
+    if (bp === 'md' && posKeyMd) return posKeyMd
+    return posKey
+  }
+
+  // 현재 BP setter
+  function setCurrentPos(p: Pos) {
+    if (bp === 'sm') setPosSm(p)
+    else if (bp === 'md') setPosMd(p)
+    else setPosLg(p)
+  }
+
   const onMouseMove = useCallback((e: MouseEvent) => {
     if (!dragging.current || !containerR.current) return
     const rect = containerR.current.getBoundingClientRect()
-    const x = Math.round(Math.max(2, Math.min(98, ((e.clientX - rect.left - dragOffset.current.dx) / rect.width)  * 100)))
-    const y = Math.round(Math.max(2, Math.min(98, ((e.clientY - rect.top  - dragOffset.current.dy) / rect.height) * 100)))
-    curPos.current = { x, y }
-    console.log("postion : ", curPos.current)
-    setPos({ x, y })
+    const newPos = toContainerPct(e.clientX, e.clientY, rect, dragOffset.current.dx, dragOffset.current.dy)
+    curPos.current = newPos
+    // 현재 BP state 업데이트 (bpRef 사용)
+    const cur = bpRef.current
+    if (cur === 'sm') setPosSm(newPos)
+    else if (cur === 'md') setPosMd(newPos)
+    else setPosLg(newPos)
   }, [])
 
   const onMouseUp = useCallback(async () => {
     if (!dragging.current) return
     dragging.current = false
     setIsDragging(false)
-
     const p = curPos.current
     if (!p) return
-
-    const ok = await savePos(posKey, p.x, p.y)
-    if (ok) {
-      setSaved(true)
-      setTimeout(() => setSaved(false), 1500)
-    }
-  }, [posKey])
+    const key = bpRef.current === 'sm' && posKeySm ? posKeySm
+              : bpRef.current === 'md' && posKeyMd ? posKeyMd
+              : posKey
+    const ok = await savePos(key, p.x, p.y)
+    if (ok) { setSaved(true); setTimeout(() => setSaved(false), 1500) }
+  }, [posKey, posKeyMd, posKeySm])
 
   useEffect(() => {
     window.addEventListener('mousemove', onMouseMove)
@@ -94,13 +156,8 @@ export default function DraggableItem({ posKey, initialPos, children }: Props) {
 
   function onMouseDown(e: React.MouseEvent) {
     if (!editMode || !wrapRef.current) return
-
-    // container 탐색
     const container = wrapRef.current.closest('[data-hero-container]') as HTMLElement | null
-    if (!container) {
-      console.warn('[DraggableItem] data-hero-container not found')
-      return
-    }
+    if (!container) return
     containerR.current = container
 
     e.preventDefault()
@@ -108,32 +165,41 @@ export default function DraggableItem({ posKey, initialPos, children }: Props) {
 
     const cr = container.getBoundingClientRect()
     const ir = wrapRef.current.getBoundingClientRect()
+    const centerX = ir.left + ir.width  / 2
+    const centerY = ir.top  + ir.height / 2
 
-    // 처음 드래그 시 현재 DOM 위치로 초기화
-    if (!curPos.current) {
-      const initX = Math.round(((ir.left + ir.width  / 2 - cr.left) / cr.width)  * 100)
-      const initY = Math.round(((ir.top  + ir.height / 2 - cr.top)  / cr.height) * 100)
-      curPos.current = { x: initX, y: initY }
-      setPos(curPos.current)
+    // 처음 드래그 시 현재 DOM 위치 기준으로 초기화
+    const resolved = resolvePos(bp, posLg, posMd, posSm)
+    if (!resolved) {
+      const initX = Math.round(((centerX - cr.left) / cr.width)  * 100 * 10) / 10
+      const initY = Math.round(((centerY - cr.top)  / cr.height) * 100 * 10) / 10
+      const init = { x: initX, y: initY }
+      curPos.current = init
+      setCurrentPos(init)
+    } else {
+      curPos.current = resolved
     }
 
     dragOffset.current = {
-      dx: e.clientX - (ir.left + ir.width  / 2 - cr.left),
-      dy: e.clientY - (ir.top  + ir.height / 2 - cr.top),
+      dx: e.clientX - centerX,
+      dy: e.clientY - centerY,
     }
     dragging.current = true
     setIsDragging(true)
   }
 
-  // 위치 미설정 + 비편집 → 원래 레이아웃
-  if (!pos && !editMode) return <>{children}</>
+  // 현재 화면에 표시할 위치
+  const displayPos = resolvePos(bp, posLg, posMd, posSm)
 
-  // 위치 미설정 + 편집 → 드래그 가능한 inline 래퍼
-  if (!pos && editMode) {
+  // 위치 미설정 + 비편집 → 원래 레이아웃
+  if (!displayPos && !editMode) return <>{children}</>
+
+  // 위치 미설정 + 편집 → 드래그 힌트
+  if (!displayPos && editMode) {
     return (
       <div
         ref={wrapRef}
-        style={{ cursor: 'grab', outline: '1.5px dashed rgba(255,255,255,0.5)', outlineOffset: '6px', display: 'inline-block' }}
+        style={{ display: 'inline-block', cursor: 'grab', outline: '1.5px dashed rgba(255,255,255,0.5)', outlineOffset: '6px' }}
         onMouseDown={onMouseDown}
       >
         {children}
@@ -141,19 +207,19 @@ export default function DraggableItem({ posKey, initialPos, children }: Props) {
     )
   }
 
-  // 위치 설정됨 → absolute 고정
+  // 위치 설정됨 → 컨테이너 기준 absolute
   return (
     <div
       ref={wrapRef}
       style={{
-        position: 'absolute',
-        left: `${pos!.x}%`,
-        top:  `${pos!.y}%`,
+        position:  'absolute',
+        left:      `${displayPos!.x}%`,
+        top:       `${displayPos!.y}%`,
         transform: 'translate(-50%, -50%)',
-        cursor:     editMode ? (isDragging ? 'grabbing' : 'grab') : 'default',
-        zIndex:     isDragging ? 50 : 10,
+        cursor:    editMode ? (isDragging ? 'grabbing' : 'grab') : 'default',
+        zIndex:    isDragging ? 50 : 10,
         userSelect: editMode ? 'none' : 'auto',
-        outline:    editMode ? '1.5px dashed rgba(255,255,255,0.5)' : 'none',
+        outline:   editMode ? '1.5px dashed rgba(255,255,255,0.5)' : 'none',
         outlineOffset: '6px',
       }}
       onMouseDown={onMouseDown}

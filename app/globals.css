@@ -169,6 +169,7 @@ body {
 }
 .hero-left {
   opacity: 0;
+  padding: 0 var(--gap);
   animation: fadeUp 0.8s 0.3s forwards;
 }
 .hero-index {
@@ -176,7 +177,7 @@ body {
   letter-spacing: 0.15em;
   color: rgba(255,255,255,0.4);
   text-transform: uppercase;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 .hero-title {
   font-family: 'DM Serif Display', serif;
@@ -716,23 +717,24 @@ body.live-edit-mode .editable-field:hover::after { opacity: 1; }
   letter-spacing: 0.08em;
 }
 
-/* ── Page Hero (Portfolio / Insight 상단) ── */
+/* ── Page Hero (Portfolio / Insight / About 상단) ── */
 .page-hero {
-  min-height: 300px;
+  height: 420px;
   background: var(--bg-dark);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 6rem var(--gap) 4rem;
+  padding: 6rem var(--gap) 3rem;
   position: relative;
   overflow: hidden;
 }
 .page-hero-inner {
   max-width: 1280px;
   width: 100%;
-  margin: 0 auto;
+  margin: 100px auto;
   display: flex;
   flex-direction: column;
+  padding: 0 var(--gap);
 }
 .page-hero-label {
   font-size: 11px;
@@ -1017,7 +1019,7 @@ body.live-edit-mode .editable-field:hover::after { opacity: 1; }
 
 /* ── About Page (심플) ── */
 .about-simple-section {
-  padding: 6rem var(--gap) 7rem;
+  padding: 3rem var(--gap) 7rem;
   border-top: 1px solid var(--border);
 }
 .about-simple-inner {
@@ -1219,7 +1221,7 @@ body.live-edit-mode .editable-field:hover::after { opacity: 1; }
 .pd-hero {
   position: relative;
   width: 100%;
-  height: 520px;
+  height: 420px;
   background: #111;
   overflow: hidden;
 }
@@ -1447,10 +1449,13 @@ body.live-edit-mode .editable-field:hover::after { opacity: 1; }
 
   /* About Page 반응형 */
   .about-simple-inner { grid-template-columns: 1fr; gap: 2.5rem; }
-  .about-simple-img-wrap { aspect-ratio: 4/3; }
+  .about-simple-img-wrap { aspect-ratio: unset; height: 420px; }
+  .about-simple-img { object-fit: cover; object-position: center top; }
 
-  /* Project Detail 반응형 */
-  .pd-hero { height: 60vh; }
+  /* Project Detail / Page Hero 반응형 */
+  .pd-hero { height: 300px; }
+  .page-hero { height: 300px; padding: 5rem var(--gap) 2.5rem; }
+  .contact-hero { height: 300px; padding: 5rem var(--gap) 2.5rem; }
   .pd-info-inner { grid-template-columns: 1fr; gap: 2rem; }
   .pd-gallery-grid { grid-template-columns: 1fr; }
   .pd-nav-inner { grid-template-columns: 1fr 1fr; gap: 1rem; }
@@ -1516,9 +1521,9 @@ body.live-edit-mode .editable-field:hover::after { opacity: 1; }
   padding-bottom: 0;
 }
 .contact-hero {
-  min-height: 260px;
+  height: 420px;
   background: var(--bg-dark);
-  padding: 6rem var(--gap) 4rem;
+  padding: 6rem var(--gap) 3rem;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
