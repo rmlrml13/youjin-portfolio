@@ -37,8 +37,8 @@ export interface Project {
 export interface ProjectBlock {
   id: number
   project_id: number
-  type: 'heading' | 'text' | 'image' | 'divider'
-  content: string
+  type: 'heading' | 'text' | 'image' | 'divider' | 'video'
+  content: string      // video 타입: 파일 URL 또는 YouTube/Vimeo URL
   image_url: string
   sort_order: number
   created_at?: string

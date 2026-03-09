@@ -131,36 +131,68 @@ function fmtDate(iso?: string) {
 
 // ── 블록 렌더러 ──
 function BlockRenderer({ block, title }: { block: ProjectBlock; title: string }) {
+  function getEmbedUrl(url: string): string | null {
+    if (!url) return null
+    const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)?([\w-]{11})/)
+    const ytFull = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\ w-]{11})/)
+    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([\ w-]{11})/)
+    const ytM = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/|youtube\.com\/watch\?.*v=)([\w-]{11})/)
+    if (ytM) return `https://www.youtube.com/embed/${ytM[1]}?rel=0`
+    const vm = url.match(/vimeo\.com\/(?:video\/)?([0-9]+)/)
+    if (vm) return `https://player.vimeo.com/video/${vm[1]}`
+    return null
+  }
+
   switch (block.type) {
     case 'heading':
       return (
         <div className="pd-block pd-block-heading">
-          <h2 className="pd-block-h">{block.content}</h2>
+          <h2
+            className="pd-block-h"
+            dangerouslySetInnerHTML={{ __html: block.content }}
+          />
         </div>
       )
     case 'text':
       return (
-        <div className="pd-block pd-block-text">
-          {block.content.split('\n').map((line, i) =>
-            line.trim()
-              ? <p key={i} className="pd-block-p">{line}</p>
-              : <br key={i} />
-          )}
-        </div>
+        <div
+          className="pd-block pd-block-text"
+          dangerouslySetInnerHTML={{ __html: block.content }}
+        />
       )
     case 'image':
       return (
         <div className="pd-block pd-block-image">
-          <div className="pd-block-img-wrap">
-            <Image
-              src={block.image_url}
-              alt={title}
-              fill
-              style={{ objectFit:'cover' }}
-            />
+          <img
+            src={block.image_url}
+            alt={title}
+            style={{ maxWidth: '100%', display: 'block', height: 'auto' }}
+          />
+        </div>
+      )
+    case 'video': {
+      const embedUrl = getEmbedUrl(block.content)
+      if (!block.content) return null
+      return (
+        <div className="pd-block pd-block-video">
+          <div className="pd-block-video-wrap">
+            {embedUrl
+              ? <iframe
+                  src={embedUrl}
+                  style={{ width:'100%', height:'100%', border:'none', display:'block' }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              : <video
+                  src={block.content}
+                  controls
+                  style={{ width:'100%', height:'100%', objectFit:'contain', display:'block' }}
+                />
+            }
           </div>
         </div>
       )
+    }
     case 'divider':
       return (
         <div className="pd-block pd-block-divider">
