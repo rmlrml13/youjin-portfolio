@@ -78,11 +78,20 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
       {/* ── 메타 바 ── */}
       <div className="pd-meta-bar">
         <div className="pd-meta-bar-inner">
-          <span className="pd-meta-bar-item">{project.tag}</span>
-          <span className="pd-meta-bar-dot">·</span>
-          <span className="pd-meta-bar-item">{fmtDate(project.created_at)}</span>
-          <span className="pd-meta-bar-dot">·</span>
-          <span className="pd-meta-bar-item">Views {(project.view_count ?? 0).toLocaleString()}</span>
+          <div className="pd-meta-chip">
+            <span className="pd-meta-chip-label">Category</span>
+            <span className="pd-meta-chip-value">{project.tag}</span>
+          </div>
+          <div className="pd-meta-divider" />
+          <div className="pd-meta-chip">
+            <span className="pd-meta-chip-label">Published</span>
+            <span className="pd-meta-chip-value">{fmtDate(project.created_at)}</span>
+          </div>
+          <div className="pd-meta-divider" />
+          <div className="pd-meta-chip">
+            <span className="pd-meta-chip-label">Views</span>
+            <span className="pd-meta-chip-value">{(project.view_count ?? 0).toLocaleString()}</span>
+          </div>
         </div>
       </div>
 

@@ -23,9 +23,10 @@ interface Props {
   selectedInsight: Insight | null
   isCreating: boolean
   token: string
-  insights: Insight[]           // 전체 목록 — 카테고리 뱃지용
+  insights: Insight[]
   onSaved: (saved: Insight, isNew: boolean) => void
   onDeleted: () => void
+  onSessionExpired?: () => void
 }
 
 function toForm(ins: Insight | null): InsightForm {
@@ -33,7 +34,7 @@ function toForm(ins: Insight | null): InsightForm {
   return { category: ins.category, title: ins.title }
 }
 
-export default function InsightEditor({ selectedInsight, isCreating, token, insights, onSaved, onDeleted }: Props) {
+export default function InsightEditor({ selectedInsight, isCreating, token, insights, onSaved, onDeleted, onSessionExpired }: Props) {
   const [form,         setForm]         = useState<InsightForm>(() => toForm(selectedInsight))
   const [imageFile,    setImageFile]    = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState(selectedInsight?.thumbnail_url ?? '')
@@ -102,6 +103,7 @@ export default function InsightEditor({ selectedInsight, isCreating, token, insi
       { method: isEdit ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) }
     )
     setSaving(false)
+    if (res.status === 401) { onSessionExpired?.(); return }
     if (res.ok) { onSaved(await res.json(), !isEdit) }
     else { const e = await res.json(); alert('오류: ' + e.error) }
   }

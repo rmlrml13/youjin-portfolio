@@ -21,6 +21,24 @@ export default function ContactForm() {
     setForm(p => ({ ...p, [e.target.name]: e.target.value }))
   }
 
+  function handlePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
+    // 숫자만 추출
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 11)
+    // 자동 하이픈 포맷: 010-0000-0000 / 02-000-0000
+    let formatted = digits
+    if (digits.startsWith('02')) {
+      if (digits.length <= 2)       formatted = digits
+      else if (digits.length <= 5)  formatted = `${digits.slice(0,2)}-${digits.slice(2)}`
+      else if (digits.length <= 9)  formatted = `${digits.slice(0,2)}-${digits.slice(2,5)}-${digits.slice(5)}`
+      else                           formatted = `${digits.slice(0,2)}-${digits.slice(2,6)}-${digits.slice(6)}`
+    } else {
+      if (digits.length <= 3)       formatted = digits
+      else if (digits.length <= 7)  formatted = `${digits.slice(0,3)}-${digits.slice(3)}`
+      else                           formatted = `${digits.slice(0,3)}-${digits.slice(3,7)}-${digits.slice(7)}`
+    }
+    setForm(p => ({ ...p, phone: formatted }))
+  }
+
   async function handleSubmit() {
     if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
       alert('이름, 이메일, 문의 내용은 필수입니다.')
@@ -41,6 +59,9 @@ export default function ContactForm() {
         <div className="contact-form-done-icon">✓</div>
         <h3>문의가 접수되었습니다</h3>
         <p>빠른 시일 내에 이메일로 회신 드리겠습니다.</p>
+        <a href="/" className="contact-submit-btn" style={{ display: 'inline-block', textDecoration: 'none', textAlign: 'center', marginTop: '0.5rem' }}>
+          홈으로 돌아가기 →
+        </a>
       </div>
     )
   }
@@ -58,8 +79,10 @@ export default function ContactForm() {
               type={f.type}
               name={f.name}
               value={(form as any)[f.name]}
-              onChange={handleChange}
+              onChange={f.name === 'phone' ? handlePhoneChange : handleChange}
               placeholder={f.placeholder}
+              maxLength={f.name === 'phone' ? 13 : undefined}
+              inputMode={f.name === 'phone' ? 'numeric' : undefined}
               className="contact-form-input"
             />
           </div>

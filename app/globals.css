@@ -15,7 +15,7 @@
   --accent:    #D0392B;
   --border:    #E8E8E8;
   --border-dark: rgba(255,255,255,0.1);
-  --gap: clamp(1.5rem, 4vw, 3rem);
+  --gap: clamp(2rem, 5vw, 3rem);
 }
 
 html { scroll-behavior: smooth; }
@@ -164,8 +164,7 @@ body {
   max-width: 1280px;
   margin: 0 auto;
   width: 100%;
-  padding-top: 6rem;
-  padding-bottom: 6rem;
+  padding: 6rem var(--gap);
 }
 .hero-left {
   opacity: 0;
@@ -730,7 +729,7 @@ body.live-edit-mode .editable-field:hover::after { opacity: 1; }
 .page-hero-inner {
   max-width: 1280px;
   width: 100%;
-  margin: 100px auto;
+  margin: 80px auto;
   display: flex;
   flex-direction: column;
   padding: 0 var(--gap);
@@ -1283,24 +1282,41 @@ body.live-edit-mode .editable-field:hover::after { opacity: 1; }
 /* 메타 바 */
 .pd-meta-bar {
   border-bottom: 1px solid var(--border);
-  padding: 1.2rem var(--gap);
+  padding: 0 var(--gap);
 }
 .pd-meta-bar-inner {
   max-width: 1280px;
   margin: 0 auto;
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  align-items: stretch;
+  gap: 0;
 }
-.pd-meta-bar-item {
-  font-size: 11px;
-  letter-spacing: 0.1em;
+.pd-meta-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 1rem 2rem 1rem 0;
+  min-width: 120px;
+}
+.pd-meta-chip-label {
+  font-size: 9px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  opacity: 0.6;
 }
-.pd-meta-bar-dot {
-  color: var(--border);
-  font-size: 14px;
+.pd-meta-chip-value {
+  font-size: 13px;
+  color: var(--fg);
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.04em;
+}
+.pd-meta-divider {
+  width: 1px;
+  background: var(--border);
+  margin: 0.75rem 2rem 0.75rem 0;
+  flex-shrink: 0;
 }
 
 /* 갤러리 */
@@ -1400,7 +1416,7 @@ body.live-edit-mode .editable-field:hover::after { opacity: 1; }
 }
 
 /* ── Responsive ── */
-@media (max-width: 768px) {
+@media (max-width: 875px) {
   .site-header { padding: 0.6rem 0.5rem 0.6rem 1.2rem; }
   .desktop-nav { display: none; }
   .hamburger { display: flex; }
@@ -1550,15 +1566,12 @@ body.live-edit-mode .editable-field:hover::after { opacity: 1; }
   line-height: 1.8;
 }
 
-/* 본문 — 좌우 분리 */
+/* 본문 — 중앙 단일 컬럼 */
 .contact-body {
-  display: grid;
-  grid-template-columns: 1fr 1.6fr;
-  gap: 6rem;
-  max-width: 1280px;
+  max-width: 720px;
   margin: 0 auto;
-  padding: 6rem var(--gap) 8rem;
-  align-items: start;
+  padding: 5rem var(--gap) 8rem;
+  width: 100%;
 }
 
 /* 왼쪽 연락처 */
@@ -1822,8 +1835,7 @@ a.contact-info-value:hover { color: var(--accent); }
 }
 
 @media (max-width: 768px) {
-  .contact-body { grid-template-columns: 1fr; gap: 3rem; padding: 3rem var(--gap) 5rem; }
+  .contact-body { padding: 3rem var(--gap) 5rem; }
   .contact-form-grid { grid-template-columns: 1fr; }
-  .contact-info { position: static; }
   .contact-submit-btn { width: 100%; text-align: center; }
 }

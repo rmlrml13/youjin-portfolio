@@ -15,6 +15,7 @@ interface Props {
   projects: Project[]
   onSaved: (project: Project, isNew: boolean) => void
   onDeleted: (id: number, title: string) => void
+  onSessionExpired?: () => void
 }
 
 function toForm(p: Project | null): ProjectForm {
@@ -22,7 +23,7 @@ function toForm(p: Project | null): ProjectForm {
   return { title: p.title, tag: p.tag }
 }
 
-export default function ProjectEditor({ selectedProject, isCreating, token, projects, onSaved, onDeleted }: Props) {
+export default function ProjectEditor({ selectedProject, isCreating, token, projects, onSaved, onDeleted, onSessionExpired }: Props) {
   const [form,         setForm]         = useState<ProjectForm>(() => toForm(selectedProject))
   const [imageFile,    setImageFile]    = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState(selectedProject?.image_url ?? '')
@@ -71,6 +72,8 @@ export default function ProjectEditor({ selectedProject, isCreating, token, proj
     fd.append('title',    form.title)
     fd.append('tag',      form.tag)
     fd.append('col_size', 'col-6')
+    // 실제 프로젝트 수 기준으로 sort_order 설정 (신규: 맨 끓, 수정: 기존 값 유지)
+    if (!selectedProject) fd.append('sort_order', String(projects.length))
     if (imageFile) fd.append('image', imageFile)
     if (!imagePreview && !imageFile) fd.append('image_url', '')
 
@@ -80,6 +83,7 @@ export default function ProjectEditor({ selectedProject, isCreating, token, proj
       { method: isEdit ? 'PUT' : 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd }
     )
     setSaving(false)
+    if (res.status === 401) { onSessionExpired?.(); return }
     if (res.ok) {
       const saved: Project = await res.json()
       setSavedProject(saved)

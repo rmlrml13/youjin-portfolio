@@ -33,42 +33,7 @@ export default async function ContactPage() {
 
         {/* 본문 */}
         <div className="contact-body">
-
-          {/* 왼쪽 — 연락처 정보 */}
-          <div className="contact-info">
-            <div className="contact-info-block">
-              <p className="contact-info-label">Email</p>
-              <a href={`mailto:${config.contact_email}`} className="contact-info-value">
-                {config.contact_email}
-              </a>
-            </div>
-            {config.contact_instagram && config.contact_instagram !== '#' && (
-              <div className="contact-info-block">
-                <p className="contact-info-label">Instagram</p>
-                <a href={config.contact_instagram} target="_blank" rel="noreferrer" className="contact-info-value">
-                  @instagram ↗
-                </a>
-              </div>
-            )}
-            {config.contact_kakaotalk && config.contact_kakaotalk !== '#' && (
-              <div className="contact-info-block">
-                <p className="contact-info-label">KakaoTalk</p>
-                <a href={config.contact_kakaotalk} target="_blank" rel="noreferrer" className="contact-info-value">
-                  오픈채팅 ↗
-                </a>
-              </div>
-            )}
-            <div className="contact-info-block">
-              <p className="contact-info-label">Response Time</p>
-              <p className="contact-info-value" style={{ color: '#888880' }}>
-                영업일 기준 1–2일 내 회신
-              </p>
-            </div>
-          </div>
-
-          {/* 오른쪽 — 폼 */}
           <ContactForm />
-
         </div>
       </main>
       <Footer config={config} />

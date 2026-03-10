@@ -10,12 +10,28 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   const authError = verifyToken(req)
   if (authError) return authError
 
+  const contentType = req.headers.get('content-type') ?? ''
+
+  // ── sort_order만 업데이트하는 JSON 요청 (드래그 정렬용) ──
+  if (contentType.includes('application/json')) {
+    const body = await req.json()
+    if (body.sort_order !== undefined) {
+      const { data, error } = await supabase
+        .from('projects')
+        .update({ sort_order: Number(body.sort_order) })
+        .eq('id', params.id)
+        .select().single()
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json(data)
+    }
+  }
+
   const formData   = await req.formData()
   const title      = formData.get('title') as string
   const tag        = formData.get('tag') as string
   const year       = formData.get('year') as string
   const col_size   = formData.get('col_size') as string
-  const sort_order = Number(formData.get('sort_order') || 0)
+  const sort_order = formData.get('sort_order') !== null ? Number(formData.get('sort_order')) : undefined
   const imageFile  = formData.get('image') as File | null
 
   // 기존 프로젝트 조회
@@ -38,7 +54,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       const oldPath = match?.[1]
       if (oldPath) await supabase.storage.from('portfolio-images').remove([oldPath])
     }
-    const { data, error } = await supabase.from('projects').update({ title: title || existing.title, tag: tag || existing.tag, image_url: '', col_size: col_size || existing.col_size, sort_order: sort_order ?? existing.sort_order }).eq('id', params.id).select().single()
+    const { data, error } = await supabase.from('projects').update({ title: title || existing.title, tag: tag || existing.tag, image_url: '', col_size: col_size || existing.col_size, sort_order: sort_order !== undefined ? sort_order : existing.sort_order }).eq('id', params.id).select().single()
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json(data)
   }
@@ -83,7 +99,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       year:       year       || existing.year,
       image_url,
       col_size:   col_size   || existing.col_size,
-      sort_order: sort_order ?? existing.sort_order,
+      sort_order: sort_order !== undefined ? sort_order : existing.sort_order,
     })
     .eq('id', params.id)
     .select()

@@ -1,16 +1,23 @@
 'use client'
 // components/admin/AdminHeader.tsx
-type MainTab = 'projects' | 'insights'
+type MainTab = 'projects' | 'insights' | 'contacts'
 
 interface Props {
   mainTab: MainTab
   projectCount: number
   insightCount: number
+  contactNewCount: number
   onTabChange: (tab: MainTab) => void
   onLogout: () => void
 }
 
-export default function AdminHeader({ mainTab, projectCount, insightCount, onTabChange, onLogout }: Props) {
+export default function AdminHeader({ mainTab, projectCount, insightCount, contactNewCount, onTabChange, onLogout }: Props) {
+  const tabs: { key: MainTab; label: string; count: number }[] = [
+    { key: 'projects', label: 'Portfolio', count: projectCount },
+    { key: 'insights', label: 'Insight',   count: insightCount },
+    { key: 'contacts', label: 'Contact',   count: contactNewCount },
+  ]
+
   return (
     <header style={{ background:'#1A1A18', padding:'0 2rem', display:'flex', justifyContent:'space-between', alignItems:'center', height:52, flexShrink:0 }}>
       <div style={{ display:'flex', alignItems:'center', gap:'2rem' }}>
@@ -19,23 +26,35 @@ export default function AdminHeader({ mainTab, projectCount, insightCount, onTab
         </span>
 
         <nav style={{ display:'flex' }}>
-          {(['projects', 'insights'] as MainTab[]).map(t => (
+          {tabs.map(({ key, label, count }) => (
             <button
-              key={t}
-              onClick={() => onTabChange(t)}
+              key={key}
+              onClick={() => onTabChange(key)}
               style={{
                 padding:'0 1.2rem', height:52,
                 background:'none', border:'none',
-                borderBottom: mainTab === t ? '2px solid #C8B89A' : '2px solid transparent',
+                borderBottom: mainTab === key ? '2px solid #C8B89A' : '2px solid transparent',
                 fontFamily:'DM Mono, monospace', fontSize:'11px', letterSpacing:'0.1em', textTransform:'uppercase',
-                color: mainTab === t ? '#C8B89A' : 'rgba(255,255,255,0.45)',
+                color: mainTab === key ? '#C8B89A' : 'rgba(255,255,255,0.45)',
                 cursor:'pointer', display:'flex', alignItems:'center', gap:'0.5rem',
+                position: 'relative',
               }}
             >
-              {t === 'projects' ? 'Portfolio' : 'Insight'}
-              <span style={{ background:'rgba(255,255,255,0.1)', color:'rgba(255,255,255,0.5)', fontSize:'9px', padding:'1px 6px', borderRadius:100 }}>
-                {t === 'projects' ? projectCount : insightCount}
-              </span>
+              {label}
+              {/* 신규 문의 뱃지 — contacts 탭에만 빨간 점 표시 */}
+              {key === 'contacts' && count > 0 ? (
+                <span style={{
+                  background: '#C0392B', color: '#fff',
+                  fontSize: '9px', padding: '1px 6px', borderRadius: 100,
+                  fontWeight: 700, minWidth: 16, textAlign: 'center',
+                }}>
+                  {count}
+                </span>
+              ) : (
+                <span style={{ background:'rgba(255,255,255,0.1)', color:'rgba(255,255,255,0.5)', fontSize:'9px', padding:'1px 6px', borderRadius:100 }}>
+                  {count}
+                </span>
+              )}
             </button>
           ))}
         </nav>
