@@ -29,8 +29,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   const formData   = await req.formData()
   const title      = formData.get('title') as string
   const tag        = formData.get('tag') as string
-  const year       = formData.get('year') as string
-  const col_size   = formData.get('col_size') as string
   const sort_order = formData.get('sort_order') !== null ? Number(formData.get('sort_order')) : undefined
   const imageFile  = formData.get('image') as File | null
 
@@ -54,7 +52,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       const oldPath = match?.[1]
       if (oldPath) await supabase.storage.from('portfolio-images').remove([oldPath])
     }
-    const { data, error } = await supabase.from('projects').update({ title: title || existing.title, tag: tag || existing.tag, image_url: '', col_size: col_size || existing.col_size, sort_order: sort_order !== undefined ? sort_order : existing.sort_order }).eq('id', params.id).select().single()
+    const { data, error } = await supabase.from('projects').update({ title: title || existing.title, tag: tag || existing.tag, image_url: '', sort_order: sort_order !== undefined ? sort_order : existing.sort_order }).eq('id', params.id).select().single()
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json(data)
   }
@@ -96,9 +94,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     .update({
       title:      title      || existing.title,
       tag:        tag        || existing.tag,
-      year:       year       || existing.year,
       image_url,
-      col_size:   col_size   || existing.col_size,
       sort_order: sort_order !== undefined ? sort_order : existing.sort_order,
     })
     .eq('id', params.id)

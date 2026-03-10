@@ -24,11 +24,8 @@ export interface Project {
   id: number
   title: string
   tag: string
-  year?: string
   image_url: string
-  col_size: string
   sort_order: number
-  client?: string
   view_count?: number
   created_at?: string
   updated_at?: string

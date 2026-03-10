@@ -25,12 +25,10 @@ export async function POST(req: NextRequest) {
   if (authError) return authError
 
   const formData  = await req.formData()
-  const title     = formData.get('title') as string
-  const tag       = formData.get('tag') as string
-  const year      = formData.get('year') as string
-  const col_size  = (formData.get('col_size') as string) || 'col-6'
+  const title      = formData.get('title') as string
+  const tag        = formData.get('tag') as string
   const sort_order = Number(formData.get('sort_order') || 0)
-  const imageFile = formData.get('image') as File | null
+  const imageFile  = formData.get('image') as File | null
 
   if (!title || !tag) {
     return NextResponse.json({ error: '필수 항목 누락' }, { status: 400 })
@@ -60,7 +58,7 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabase
     .from('projects')
-    .insert([{ title, tag, year, image_url, col_size, sort_order }])
+    .insert([{ title, tag, image_url, sort_order }])
     .select()
     .single()
 

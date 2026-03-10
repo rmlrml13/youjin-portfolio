@@ -581,6 +581,18 @@ const BlockEditor = forwardRef<BlockEditorHandle, Props>(function BlockEditor(
         <FmtBtn onClick={() => exec('strikeThrough')} title="취소선"><span style={{ textDecoration: 'line-through' }}>T</span></FmtBtn>
         <VSep />
         <ColorPicker onSelect={color => exec('foreColor', color)} />
+        <FontSizePicker onSelect={size => {
+          const sel = window.getSelection()
+          if (!sel || sel.isCollapsed) return
+          document.execCommand('fontSize', false, '7')
+          editorRef.current?.querySelectorAll('font[size="7"]').forEach(el => {
+            const span = document.createElement('span')
+            span.style.fontSize = size
+            span.innerHTML = (el as HTMLElement).innerHTML
+            el.replaceWith(span)
+          })
+          syncBlocksFromEditor()
+        }} />
         <VSep />
         <FmtBtn onClick={() => exec('justifyLeft')}   title="왼쪽">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
@@ -735,6 +747,86 @@ function ColorPicker({ onSelect }: { onSelect: (color: string) => void }) {
           {colors.map(c => (
             <button key={c} onClick={() => { onSelect(c); setOpen(false) }}
               style={{ width: 20, height: 20, borderRadius: 3, background: c, border: `1px solid ${c === '#fff' ? COLORS.border : 'transparent'}`, cursor: 'pointer' }} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function FontSizePicker({ onSelect }: { onSelect: (size: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const [current, setCurrent] = useState('14')
+  const ref = useRef<HTMLDivElement>(null)
+  const sizes = ['10','11','12','13','14','16','18','20','24','28','32','40']
+
+  // 외부 클릭 시 닫기
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  return (
+    <div ref={ref} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+      {/* 입력창 형태 버튼 */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        title="글자 크기"
+        style={{
+          display: 'flex', alignItems: 'center', gap: '3px',
+          padding: '0.22rem 0.4rem 0.22rem 0.6rem',
+          background: '#fff',
+          border: `1px solid ${COLORS.border}`,
+          borderRadius: 3, cursor: 'pointer',
+          fontFamily: 'DM Mono, monospace', fontSize: '12px',
+          color: COLORS.ink, minWidth: 46,
+          transition: 'border-color 0.1s',
+        }}
+        onMouseEnter={e => (e.currentTarget.style.borderColor = COLORS.inkLight)}
+        onMouseLeave={e => (e.currentTarget.style.borderColor = open ? COLORS.inkLight : COLORS.border)}
+      >
+        <span style={{ flex: 1, textAlign: 'center', letterSpacing: 0 }}>{current}</span>
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0, opacity: 0.45 }}>
+          <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+
+      {/* 드롭다운 */}
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 3px)', left: 0, zIndex: 300,
+          background: '#fff',
+          border: `1px solid ${COLORS.border}`,
+          borderRadius: 4,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
+          padding: '0.25rem 0',
+          minWidth: 56,
+          maxHeight: 220, overflowY: 'auto',
+        }}>
+          {sizes.map(s => (
+            <button key={s}
+              onClick={() => {
+                setCurrent(s)
+                onSelect(s + 'px')
+                setOpen(false)
+              }}
+              style={{
+                display: 'block', width: '100%',
+                padding: '0.3rem 0.75rem',
+                background: current === s ? COLORS.hover : 'transparent',
+                border: 'none',
+                fontFamily: 'DM Mono, monospace', fontSize: '12px',
+                color: current === s ? COLORS.ink : COLORS.inkMid,
+                fontWeight: current === s ? 700 : 400,
+                cursor: 'pointer', textAlign: 'left',
+                transition: 'background 0.1s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = COLORS.hover)}
+              onMouseLeave={e => (e.currentTarget.style.background = current === s ? COLORS.hover : 'transparent')}
+            >{s}</button>
           ))}
         </div>
       )}

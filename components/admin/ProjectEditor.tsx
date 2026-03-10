@@ -69,10 +69,8 @@ export default function ProjectEditor({ selectedProject, isCreating, token, proj
     await blockEditorRef.current?.flush()
 
     const fd = new FormData()
-    fd.append('title',    form.title)
-    fd.append('tag',      form.tag)
-    fd.append('col_size', 'col-6')
-    // 실제 프로젝트 수 기준으로 sort_order 설정 (신규: 맨 끓, 수정: 기존 값 유지)
+    fd.append('title', form.title)
+    fd.append('tag',   form.tag)
     if (!selectedProject) fd.append('sort_order', String(projects.length))
     if (imageFile) fd.append('image', imageFile)
     if (!imagePreview && !imageFile) fd.append('image_url', '')
