@@ -115,7 +115,7 @@ export default function PortfolioFilterClient() {
             editMode ? (
               <div
                 key={p.id}
-                className={`work-item ${p.col_size} visible`}
+                className="work-item visible"
                 style={{ cursor: 'pointer' }}
                 onClick={() => openEdit(p)}
               >
@@ -132,7 +132,7 @@ export default function PortfolioFilterClient() {
                 </div>
               </div>
             ) : (
-              <Link key={p.id} href={`/portfolio/${p.id}`} className={`work-item ${p.col_size}`} style={{ textDecoration:'none' }}>
+              <Link key={p.id} href={`/portfolio/${p.id}`} className="work-item" style={{ textDecoration:'none' }}>
                 <div className="work-thumb" style={{ position:'relative' }}>
                   {p.image_url
                     ? <Image src={p.image_url} alt={p.title} fill style={{ objectFit:'cover' }} />
