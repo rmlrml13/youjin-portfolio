@@ -2,8 +2,8 @@
 // components/admin/ProjectEditor.tsx
 import { useState, useRef, useEffect } from 'react'
 import type { Project, ProjectBlock } from '@/lib/types'
-import BlockEditor from '@/components/portfolio/BlockEditor'
-import type { BlockEditorHandle } from '@/components/portfolio/BlockEditor'
+import BlockEditorCard from '@/components/portfolio/BlockEditorCard'
+import type { BlockEditorHandle } from '@/components/portfolio/BlockEditorCard'
 import { s, COLORS, fmtDate } from './adminStyles'
 
 interface ProjectForm { title: string; tag: string }
@@ -276,7 +276,7 @@ export default function ProjectEditor({ selectedProject, isCreating, token, proj
             <div>
               <SectionLabel>콘텐츠</SectionLabel>
               {blockTarget ? (
-                <BlockEditor
+                <BlockEditorCard
                   ref={blockEditorRef}
                   projectId={blockTarget.id}
                   token={token}

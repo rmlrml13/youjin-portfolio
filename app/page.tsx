@@ -5,6 +5,7 @@ import Footer                  from '@/components/common/Footer'
 import LiveEditWrapper         from '@/components/live-edit/LiveEditWrapper'
 import PortfolioGridController from '@/components/portfolio/PortfolioGridController'
 import InsightPreview          from '@/components/home/InsightPreview'
+import ContactBanner           from '@/components/home/ContactBanner'
 import { getSiteConfig }       from '@/lib/config'
 
 export const dynamic = 'force-dynamic'
@@ -31,6 +32,10 @@ export default async function HomePage() {
 
       {/* Insight 프리뷰 */}
       <InsightPreview />
+
+      {/* Contact 배너 
+      <ContactBanner />
+      */}
 
       <Footer config={config} />
       <LiveEditWrapper initialConfig={config} />
