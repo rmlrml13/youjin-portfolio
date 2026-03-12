@@ -67,14 +67,12 @@ const BlockEditorCard = forwardRef<BlockEditorHandle, Props>(function BlockEdito
   const [blocks,   setBlocks]   = useState<CBlock[]>([])
   const [loading,  setLoading]  = useState(true)
   const [flushing, setFlushing] = useState(false)
-  const [addOpen,  setAddOpen]  = useState(false)
   const [dragId,   setDragId]   = useState<string | null>(null)
   const [dragOver, setDragOver] = useState<string | null>(null)
 
   const blocksRef    = useRef<CBlock[]>([])
   const globalImgRef = useRef<HTMLInputElement>(null)
   const pendingId    = useRef<string | null>(null)
-  const addBtnRef    = useRef<HTMLDivElement>(null)
   const base = `${apiBase}/${projectId}/blocks`
 
   /* ── 로드 ── */
@@ -189,15 +187,6 @@ const BlockEditorCard = forwardRef<BlockEditorHandle, Props>(function BlockEdito
     setDragId(null); setDragOver(null)
   }
 
-  /* 팝업 외부 클릭 닫기 */
-  useEffect(() => {
-    function h(e: MouseEvent) {
-      if (addBtnRef.current && !addBtnRef.current.contains(e.target as Node)) setAddOpen(false)
-    }
-    document.addEventListener('mousedown', h)
-    return () => document.removeEventListener('mousedown', h)
-  }, [])
-
   if (loading) return (
     <div style={{ padding: '2rem', textAlign: 'center' }}>
       <span style={{ display: 'inline-block', width: 14, height: 14, border: `2px solid ${COLORS.border}`, borderTopColor: COLORS.gold, borderRadius: '50%', animation: 'cbe-spin 0.6s linear infinite' }} />
@@ -205,88 +194,100 @@ const BlockEditorCard = forwardRef<BlockEditorHandle, Props>(function BlockEdito
   )
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
 
-      {/* ── 블록 목록 ── */}
-      {blocks.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
-          {blocks.map(b => (
-            <BlockCard
-              key={b.localId}
-              block={b}
-              isDragging={dragId === b.localId}
-              isDragOver={dragOver === b.localId}
-              token={token}
-              base={base}
-              onUpdate={patch => upd(b.localId, patch)}
-              onDelete={() => del(b.localId, b.dbId)}
-              onDragStart={() => onDragStart(b.localId)}
-              onDragOver={e => onDragOver(e, b.localId)}
-              onDrop={() => onDrop(b.localId)}
-              onDragEnd={() => { setDragId(null); setDragOver(null) }}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* ── + 블록 추가 버튼 ── */}
-      <div ref={addBtnRef} style={{ position: 'relative' }}>
-        <button
-          onClick={() => setAddOpen(o => !o)}
-          style={{
-            width: '100%', padding: '0.7rem',
-            border: `1.5px dashed ${addOpen ? COLORS.gold : COLORS.borderMid}`,
-            background: addOpen ? '#FFFDF8' : COLORS.surface,
-            color: addOpen ? COLORS.gold : COLORS.inkFaint,
-            fontFamily: 'DM Mono, monospace', fontSize: '11px',
-            letterSpacing: '0.1em', textTransform: 'uppercase',
-            cursor: 'pointer', borderRadius: 4, transition: 'all 0.15s',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
-          }}
-          onMouseEnter={e => { if (!addOpen) { e.currentTarget.style.borderColor = COLORS.inkLight; e.currentTarget.style.color = COLORS.inkMid } }}
-          onMouseLeave={e => { if (!addOpen) { e.currentTarget.style.borderColor = COLORS.borderMid; e.currentTarget.style.color = COLORS.inkFaint } }}
-        >
-          <span style={{ fontSize: '14px', lineHeight: 1 }}>{addOpen ? '✕' : '+'}</span>
-          {addOpen ? '닫기' : '블록 추가'}
-        </button>
-
-        {/* 타입 선택 팝업 */}
-        {addOpen && (
+      {/* ── 왼쪽: 블록 목록 ── */}
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0 }}>
+        {blocks.length === 0 ? (
           <div style={{
-            position: 'absolute', bottom: 'calc(100% + 6px)', left: 0, right: 0,
-            background: '#fff', border: `1px solid ${COLORS.border}`,
-            borderRadius: 6, boxShadow: '0 -4px 24px rgba(0,0,0,0.10)',
-            padding: '0.5rem', zIndex: 200,
-            display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px',
+            border: `2px dashed ${COLORS.borderMid}`, borderRadius: 6,
+            padding: '3rem 1.5rem', textAlign: 'center',
+            background: COLORS.surface,
           }}>
-            {(Object.entries(TYPE_META) as [BType, typeof TYPE_META[BType]][]).map(([type, meta]) => (
-              <button
-                key={type}
-                onClick={() => addBlock(type)}
-                style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center',
-                  gap: '0.35rem', padding: '0.65rem 0.5rem',
-                  background: COLORS.surface, border: `1px solid ${COLORS.border}`,
-                  borderRadius: 4, cursor: 'pointer', transition: 'all 0.12s',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = COLORS.hover; e.currentTarget.style.borderColor = meta.color }}
-                onMouseLeave={e => { e.currentTarget.style.background = COLORS.surface; e.currentTarget.style.borderColor = COLORS.border }}
-              >
-                <span style={{ fontSize: '1.1rem', lineHeight: 1, fontFamily: 'DM Serif Display, serif', color: meta.color }}>{meta.icon}</span>
-                <span style={{ fontSize: '9px', letterSpacing: '0.08em', textTransform: 'uppercase', color: COLORS.inkMid, fontFamily: 'DM Mono, monospace' }}>{meta.label}</span>
-              </button>
+            <div style={{ fontSize: '2rem', marginBottom: '0.6rem', opacity: 0.25 }}>☰</div>
+            <p style={{ fontSize: '11px', color: COLORS.inkFaint, fontFamily: 'DM Mono, monospace', letterSpacing: '0.08em' }}>
+              오른쪽에서 블록을 추가하세요
+            </p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {blocks.map(b => (
+              <BlockCard
+                key={b.localId}
+                block={b}
+                isDragging={dragId === b.localId}
+                isDragOver={dragOver === b.localId}
+                token={token}
+                base={base}
+                onUpdate={patch => upd(b.localId, patch)}
+                onDelete={() => del(b.localId, b.dbId)}
+                onDragStart={() => onDragStart(b.localId)}
+                onDragOver={e => onDragOver(e, b.localId)}
+                onDrop={() => onDrop(b.localId)}
+                onDragEnd={() => { setDragId(null); setDragOver(null) }}
+              />
             ))}
+          </div>
+        )}
+
+        {/* 저장 인디케이터 */}
+        {flushing && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 0', marginTop: '0.4rem' }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', display: 'inline-block', border: `1.5px solid ${COLORS.border}`, borderTopColor: COLORS.gold, animation: 'cbe-spin 0.6s linear infinite' }} />
+            <span style={{ fontSize: '9px', color: COLORS.inkFaint, fontFamily: 'DM Mono, monospace', letterSpacing: '0.08em' }}>저장 중...</span>
           </div>
         )}
       </div>
 
-      {/* 저장 인디케이터 */}
-      {flushing && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 0', marginTop: '0.4rem' }}>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', display: 'inline-block', border: `1.5px solid ${COLORS.border}`, borderTopColor: COLORS.gold, animation: 'cbe-spin 0.6s linear infinite' }} />
-          <span style={{ fontSize: '9px', color: COLORS.inkFaint, fontFamily: 'DM Mono, monospace', letterSpacing: '0.08em' }}>저장 중...</span>
-        </div>
-      )}
+      {/* ── 오른쪽: 블록 추가 패널 (상시) ── */}
+      <div style={{
+        width: 88, flexShrink: 0,
+        position: 'sticky', top: 0,
+        display: 'flex', flexDirection: 'column', gap: '4px',
+      }}>
+        {/* 섹션 레이블 */}
+        <div style={{
+          fontSize: '8px', letterSpacing: '0.14em', textTransform: 'uppercase',
+          color: COLORS.inkFaint, fontFamily: 'DM Mono, monospace',
+          textAlign: 'center', paddingBottom: '6px',
+          borderBottom: `1px solid ${COLORS.border}`,
+          marginBottom: '2px',
+        }}>추가</div>
+
+        {(Object.entries(TYPE_META) as [BType, typeof TYPE_META[BType]][]).map(([type, meta]) => (
+          <button
+            key={type}
+            onClick={() => addBlock(type)}
+            title={meta.label}
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              gap: '0.3rem', padding: '0.6rem 0.4rem',
+              background: '#fff',
+              border: `1px solid ${COLORS.border}`,
+              borderLeft: `3px solid ${meta.color}`,
+              borderRadius: 4, cursor: 'pointer', transition: 'all 0.12s',
+              width: '100%',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = COLORS.hover
+              e.currentTarget.style.borderColor = meta.color
+              e.currentTarget.style.borderLeftColor = meta.color
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = '#fff'
+              e.currentTarget.style.borderColor = COLORS.border
+              e.currentTarget.style.borderLeftColor = meta.color
+            }}
+          >
+            <span style={{ fontSize: '1rem', lineHeight: 1, color: meta.color }}>{meta.icon}</span>
+            <span style={{
+              fontSize: '8px', letterSpacing: '0.06em', textTransform: 'uppercase',
+              color: COLORS.inkMid, fontFamily: 'DM Mono, monospace', lineHeight: 1.2,
+              textAlign: 'center',
+            }}>{meta.label}</span>
+          </button>
+        ))}
+      </div>
 
       <input ref={globalImgRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleGlobalImg} />
       <style>{`@keyframes cbe-spin { to { transform: rotate(360deg); } }`}</style>

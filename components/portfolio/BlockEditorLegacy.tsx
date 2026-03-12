@@ -1,6 +1,5 @@
 'use client'
 // components/portfolio/BlockEditorLegacy.tsx
-// ⚠️  기존 에디터 백업본 — 수정하지 마세요
 // 자연스러운 글쓰기 에디터
 // - 텍스트 영역은 하나의 contenteditable div (단락 자동 분리)
 // - 제목은 # 또는 헤딩 버튼으로 전환
@@ -9,7 +8,7 @@
 // - flush() 호출 시 전체 내용 서버에 저장
 
 import {
-  useState, useEffect, useImperativeHandle, useRef, forwardRef, useCallback,
+  useState, useEffect, useImperativeHandle, useRef, forwardRef,
 } from 'react'
 import type { ProjectBlock } from '@/lib/types'
 import { COLORS } from '@/components/admin/adminStyles'
@@ -40,16 +39,14 @@ const BlockEditorLegacy = forwardRef<BlockEditorHandle, Props>(function BlockEdi
   const [loading,  setLoading]  = useState(true)
   const [flushing, setFlushing] = useState(false)
 
-  const blocksRef      = useRef<LocalBlock[]>([])
-  const editorRef      = useRef<HTMLDivElement>(null)
-  const imgInputRef    = useRef<HTMLInputElement>(null)
-  const videoInputRef  = useRef<HTMLInputElement>(null)
+  const blocksRef     = useRef<LocalBlock[]>([])
+  const editorRef     = useRef<HTMLDivElement>(null)
+  const imgInputRef   = useRef<HTMLInputElement>(null)
+  const videoInputRef = useRef<HTMLInputElement>(null)
+  const isFirstRender = useRef(true)
   const base = `${apiBase}/${projectId}/blocks`
 
-  useEffect(() => {
-    isFirstRender.current = true
-    loadBlocks()
-  }, [projectId])
+  useEffect(() => { isFirstRender.current = true; loadBlocks() }, [projectId])
   useEffect(() => {
     blocksRef.current = blocks
     onBlocksChange?.(blocks.filter(b => b.id != null) as any)
@@ -60,44 +57,27 @@ const BlockEditorLegacy = forwardRef<BlockEditorHandle, Props>(function BlockEdi
     const res  = await fetch(base)
     const data = await res.json()
     const loaded: LocalBlock[] = Array.isArray(data)
-      ? data.map((b: ProjectBlock) => ({
-          id: b.id, type: b.type, content: b.content,
-          image_url: b.image_url, sort_order: b.sort_order, dirty: false,
-        }))
+      ? data.map((b: ProjectBlock) => ({ id: b.id, type: b.type, content: b.content, image_url: b.image_url, sort_order: b.sort_order, dirty: false }))
       : []
     setBlocks(loaded.length > 0 ? loaded : [])
     setLoading(false)
   }
 
-  const isFirstRender = useRef(true)
   useEffect(() => {
     if (loading) return
-    if (isFirstRender.current) {
-      isFirstRender.current = false
-      renderBlocksToEditor(blocks)
-    }
+    if (isFirstRender.current) { isFirstRender.current = false; renderBlocksToEditor(blocks) }
   }, [loading])
 
   function renderBlocksToEditor(bs: LocalBlock[]) {
     const el = editorRef.current; if (!el) return
     el.innerHTML = ''
-    if (bs.length === 0) {
-      const p = document.createElement('p'); p.className = 'be-p'; el.appendChild(p); return
-    }
+    if (bs.length === 0) { const p = document.createElement('p'); p.className = 'be-p'; el.appendChild(p); return }
     bs.forEach(b => {
-      if (b.type === 'heading') {
-        const h = document.createElement('h2'); h.className = 'be-h2'; h.innerHTML = b.content; h.contentEditable = 'true'; el.appendChild(h)
-      } else if (b.type === 'text') {
-        const p = document.createElement('p'); p.className = 'be-p'; p.innerHTML = b.content || ''; p.contentEditable = 'true'; el.appendChild(p)
-      } else if (b.type === 'divider') {
-        el.appendChild(makeDividerEl())
-      } else if (b.type === 'image') {
-        el.appendChild(makeImageEl(b.image_url, b.id))
-        const p = document.createElement('p'); p.className = 'be-p'; p.contentEditable = 'true'; el.appendChild(p)
-      } else if (b.type === 'video') {
-        el.appendChild(makeVideoEl(b.content, b.id))
-        const p = document.createElement('p'); p.className = 'be-p'; p.contentEditable = 'true'; el.appendChild(p)
-      }
+      if (b.type === 'heading') { const h = document.createElement('h2'); h.className = 'be-h2'; h.innerHTML = b.content; h.contentEditable = 'true'; el.appendChild(h) }
+      else if (b.type === 'text') { const p = document.createElement('p'); p.className = 'be-p'; p.innerHTML = b.content || ''; p.contentEditable = 'true'; el.appendChild(p) }
+      else if (b.type === 'divider') { el.appendChild(makeDividerEl()) }
+      else if (b.type === 'image') { el.appendChild(makeImageEl(b.image_url, b.id)); const p = document.createElement('p'); p.className = 'be-p'; p.contentEditable = 'true'; el.appendChild(p) }
+      else if (b.type === 'video') { el.appendChild(makeVideoEl(b.content, b.id)); const p = document.createElement('p'); p.className = 'be-p'; p.contentEditable = 'true'; el.appendChild(p) }
     })
   }
 
@@ -107,20 +87,11 @@ const BlockEditorLegacy = forwardRef<BlockEditorHandle, Props>(function BlockEdi
     el.childNodes.forEach(node => {
       if (!(node instanceof HTMLElement)) return
       const tag = node.tagName.toLowerCase()
-      if (tag === 'h2') {
-        result.push({ id: null, type: 'heading', content: node.innerHTML, image_url: '', sort_order: order++, dirty: true })
-      } else if (tag === 'p') {
-        const html = node.innerHTML.replace(/<br>/g, '')
-        if (!html.trim()) return
-        result.push({ id: null, type: 'text', content: node.innerHTML, image_url: '', sort_order: order++, dirty: true })
-      } else if (node.classList.contains('be-divider')) {
-        result.push({ id: Number(node.dataset.blockId) || null, type: 'divider', content: '', image_url: '', sort_order: order++, dirty: false })
-      } else if (node.classList.contains('be-image-wrap')) {
-        const img = node.querySelector('img')
-        if (img) result.push({ id: Number(node.dataset.blockId) || null, type: 'image', content: '', image_url: img.src, sort_order: order++, dirty: false })
-      } else if (node.classList.contains('be-video-wrap')) {
-        result.push({ id: Number(node.dataset.blockId) || null, type: 'video', content: node.dataset.src ?? '', image_url: '', sort_order: order++, dirty: false })
-      }
+      if (tag === 'h2') { result.push({ id: null, type: 'heading', content: node.innerHTML, image_url: '', sort_order: order++, dirty: true }) }
+      else if (tag === 'p') { const html = node.innerHTML.replace(/<br>/g, ''); if (!html.trim()) return; result.push({ id: null, type: 'text', content: node.innerHTML, image_url: '', sort_order: order++, dirty: true }) }
+      else if (node.classList.contains('be-divider')) { result.push({ id: Number(node.dataset.blockId) || null, type: 'divider', content: '', image_url: '', sort_order: order++, dirty: false }) }
+      else if (node.classList.contains('be-image-wrap')) { const img = node.querySelector('img'); if (img) result.push({ id: Number(node.dataset.blockId) || null, type: 'image', content: '', image_url: img.src, sort_order: order++, dirty: false }) }
+      else if (node.classList.contains('be-video-wrap')) { result.push({ id: Number(node.dataset.blockId) || null, type: 'video', content: node.dataset.src ?? '', image_url: '', sort_order: order++, dirty: false }) }
     })
     return result
   }
@@ -272,11 +243,8 @@ const BlockEditorLegacy = forwardRef<BlockEditorHandle, Props>(function BlockEdi
 
   function toggleHeading() {
     const anchor = getBlockElement(); if (!anchor) return
-    if (anchor.tagName === 'H2') {
-      const p = document.createElement('p'); p.className = 'be-p'; p.contentEditable = 'true'; p.innerHTML = anchor.innerHTML; anchor.replaceWith(p); setCursorEnd(p)
-    } else if (anchor.tagName === 'P') {
-      const h = document.createElement('h2'); h.className = 'be-h2'; h.contentEditable = 'true'; h.innerHTML = anchor.innerHTML; anchor.replaceWith(h); setCursorEnd(h)
-    }
+    if (anchor.tagName === 'H2') { const p = document.createElement('p'); p.className = 'be-p'; p.contentEditable = 'true'; p.innerHTML = anchor.innerHTML; anchor.replaceWith(p); setCursorEnd(p) }
+    else if (anchor.tagName === 'P') { const h = document.createElement('h2'); h.className = 'be-h2'; h.contentEditable = 'true'; h.innerHTML = anchor.innerHTML; anchor.replaceWith(h); setCursorEnd(h) }
     syncBlocksFromEditor()
   }
 
@@ -285,52 +253,125 @@ const BlockEditorLegacy = forwardRef<BlockEditorHandle, Props>(function BlockEdi
     const sel = window.getSelection(); sel?.removeAllRanges(); sel?.addRange(r); el.focus()
   }
 
-  if (loading) return <div style={{ padding: '3rem', textAlign: 'center' }}><span style={{ display: 'inline-block', width: 14, height: 14, border: `2px solid ${COLORS.border}`, borderTopColor: COLORS.gold, borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} /></div>
+  if (loading) return (
+    <div style={{ padding: '3rem', textAlign: 'center' }}>
+      <span style={{ display: 'inline-block', width: 14, height: 14, border: `2px solid ${COLORS.border}`, borderTopColor: COLORS.gold, borderRadius: '50%', animation: 'be-spin 0.6s linear infinite' }} />
+    </div>
+  )
 
   return (
     <div style={{ fontFamily: 'inherit' }}>
+      {/* 삽입 툴바 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '2px', padding: '0.35rem 0.6rem', background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: '4px 4px 0 0' }}>
-        <InsertBtn onClick={() => imgInputRef.current?.click()} title="사진"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>사진</InsertBtn>
-        <InsertBtn onClick={() => videoInputRef.current?.click()} title="동영상"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>동영상</InsertBtn>
-        <InsertBtn onClick={() => { const v = makeVideoEl(''); insertNodeAtCursor(v); v.querySelector<HTMLInputElement>('input')?.focus() }} title="URL"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>URL</InsertBtn>
+        <InsertBtn onClick={() => imgInputRef.current?.click()} title="사진">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          사진
+        </InsertBtn>
+        <InsertBtn onClick={() => videoInputRef.current?.click()} title="동영상">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          동영상
+        </InsertBtn>
+        <InsertBtn onClick={() => { const v = makeVideoEl(''); insertNodeAtCursor(v); v.querySelector<HTMLInputElement>('input')?.focus() }} title="URL">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          URL
+        </InsertBtn>
         <div style={{ width: 1, height: 16, background: COLORS.border, margin: '0 2px' }} />
-        <InsertBtn onClick={() => { const d = makeDividerEl(); insertNodeAtCursor(d) }} title="구분선"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="2" y1="12" x2="22" y2="12"/></svg>구분선</InsertBtn>
+        <InsertBtn onClick={() => { const d = makeDividerEl(); insertNodeAtCursor(d) }} title="구분선">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="2" y1="12" x2="22" y2="12"/></svg>
+          구분선
+        </InsertBtn>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          {flushing && <><span style={{ width: 8, height: 8, borderRadius: '50%', display: 'inline-block', border: `1.5px solid ${COLORS.border}`, borderTopColor: COLORS.gold, animation: 'spin 0.6s linear infinite' }} /><span style={{ fontSize: '9px', color: COLORS.inkFaint, fontFamily: 'DM Mono, monospace' }}>저장 중...</span></>}
+          {flushing && (
+            <>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', display: 'inline-block', border: `1.5px solid ${COLORS.border}`, borderTopColor: COLORS.gold, animation: 'be-spin 0.6s linear infinite' }} />
+              <span style={{ fontSize: '9px', color: COLORS.inkFaint, fontFamily: 'DM Mono, monospace' }}>저장 중...</span>
+            </>
+          )}
         </div>
       </div>
+
+      {/* 서식 툴바 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexWrap: 'wrap', padding: '0.28rem 0.6rem', background: '#fff', border: `1px solid ${COLORS.border}`, borderTop: 'none', userSelect: 'none' }}>
-        <FmtBtn onClick={toggleHeading} title="제목"><span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '13px', fontWeight: 700 }}>H</span></FmtBtn>
+        <FmtBtn onClick={toggleHeading} title="제목 전환 (# + 스페이스 단축키)">
+          <span style={{ fontFamily: 'DM Serif Display, serif', fontSize: '13px', fontWeight: 700 }}>H</span>
+        </FmtBtn>
         <VSep />
         <FmtBtn onClick={() => exec('bold')}><b>B</b></FmtBtn>
         <FmtBtn onClick={() => exec('italic')}><i style={{ fontStyle: 'italic' }}>I</i></FmtBtn>
         <FmtBtn onClick={() => exec('underline')}><u>U</u></FmtBtn>
         <FmtBtn onClick={() => exec('strikeThrough')}><span style={{ textDecoration: 'line-through' }}>T</span></FmtBtn>
         <VSep />
-        <FmtBtn onClick={() => exec('justifyLeft')}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg></FmtBtn>
-        <FmtBtn onClick={() => exec('justifyCenter')}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></FmtBtn>
-        <FmtBtn onClick={() => exec('justifyRight')}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="6" y1="18" x2="21" y2="18"/></svg></FmtBtn>
+        <FmtBtn onClick={() => exec('justifyLeft')}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
+        </FmtBtn>
+        <FmtBtn onClick={() => exec('justifyCenter')}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+        </FmtBtn>
+        <FmtBtn onClick={() => exec('justifyRight')}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="6" y1="18" x2="21" y2="18"/></svg>
+        </FmtBtn>
         <VSep />
-        <FmtBtn onClick={() => { const url = prompt('링크 URL:'); if (url) exec('createLink', url) }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></FmtBtn>
+        <FmtBtn onClick={() => { const url = prompt('링크 URL:'); if (url) exec('createLink', url) }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        </FmtBtn>
         <VSep />
-        <FmtBtn onClick={() => exec('removeFormat')}><span style={{ fontSize: '10px', fontFamily: 'DM Mono, monospace' }}>Tx</span></FmtBtn>
+        <FmtBtn onClick={() => exec('removeFormat')}>
+          <span style={{ fontSize: '10px', fontFamily: 'DM Mono, monospace' }}>Tx</span>
+        </FmtBtn>
       </div>
-      <div ref={editorRef} contentEditable suppressContentEditableWarning onKeyDown={handleKeyDown} onInput={syncBlocksFromEditor}
-        style={{ background: '#fff', border: `1px solid ${COLORS.border}`, borderTop: 'none', borderRadius: '0 0 4px 4px', minHeight: 480, padding: '2rem 2.5rem 4rem', outline: 'none', color: COLORS.ink, fontSize: '15px', lineHeight: 1.85, wordBreak: 'break-word' }} />
-      <input ref={imgInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} />
+
+      {/* 편집 영역 */}
+      <div
+        ref={editorRef}
+        contentEditable
+        suppressContentEditableWarning
+        onKeyDown={handleKeyDown}
+        onInput={syncBlocksFromEditor}
+        style={{
+          background: '#fff',
+          border: `1px solid ${COLORS.border}`,
+          borderTop: 'none',
+          borderRadius: '0 0 4px 4px',
+          minHeight: 480,
+          padding: '2rem 2.5rem 4rem',
+          outline: 'none',
+          color: COLORS.ink,
+          fontSize: '15px',
+          lineHeight: 1.85,
+          wordBreak: 'break-word',
+        }}
+      />
+
+      <input ref={imgInputRef}   type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} />
       <input ref={videoInputRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleVideoUpload} />
-      <style>{`.be-p{margin:0;min-height:1.85em;font-size:15px;line-height:1.85;color:${COLORS.ink}}.be-h2{margin:.6rem 0 .3rem;font-family:'DM Serif Display',serif;font-size:1.5rem;font-weight:700;line-height:1.3;color:${COLORS.ink};border-bottom:2px solid ${COLORS.border};padding-bottom:.2rem}[contenteditable]:focus{outline:none}@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <style>{`
+        .be-p  { margin:0; min-height:1.85em; font-size:15px; line-height:1.85; color:${COLORS.ink} }
+        .be-h2 { margin:.6rem 0 .3rem; font-family:'DM Serif Display',serif; font-size:1.5rem; font-weight:700; line-height:1.3; color:${COLORS.ink}; border-bottom:2px solid ${COLORS.border}; padding-bottom:.2rem }
+        [contenteditable]:focus { outline:none }
+        @keyframes be-spin { to { transform:rotate(360deg) } }
+      `}</style>
     </div>
   )
 })
 
 export default BlockEditorLegacy
 
+/* ── 소컴포넌트 ── */
 function InsertBtn({ children, onClick, title }: { children: React.ReactNode; onClick: () => void; title?: string }) {
-  return <button onClick={onClick} title={title} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '0.35rem 0.7rem', background: 'transparent', color: COLORS.inkMid, border: 'none', cursor: 'pointer', borderRadius: 4, fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.04em', transition: 'all 0.12s' }} onMouseEnter={e => (e.currentTarget.style.background = COLORS.hover)} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>{children}</button>
+  return (
+    <button onClick={onClick} title={title} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '0.35rem 0.7rem', background: 'transparent', color: COLORS.inkMid, border: 'none', cursor: 'pointer', borderRadius: 4, fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.04em', transition: 'all 0.12s' }}
+      onMouseEnter={e => (e.currentTarget.style.background = COLORS.hover)}
+      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+    >{children}</button>
+  )
 }
 function FmtBtn({ children, onClick, title }: { children: React.ReactNode; onClick: () => void; title?: string }) {
-  return <button onClick={onClick} title={title} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.28rem 0.48rem', minWidth: 26, background: 'transparent', color: COLORS.ink, border: '1px solid transparent', borderRadius: 3, cursor: 'pointer', fontSize: '13px', lineHeight: 1, transition: 'all 0.1s' }} onMouseEnter={e => { e.currentTarget.style.background = COLORS.hover; e.currentTarget.style.borderColor = COLORS.border }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent' }}>{children}</button>
+  return (
+    <button onClick={onClick} title={title} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.28rem 0.48rem', minWidth: 26, background: 'transparent', color: COLORS.ink, border: '1px solid transparent', borderRadius: 3, cursor: 'pointer', fontSize: '13px', lineHeight: 1, transition: 'all 0.1s' }}
+      onMouseEnter={e => { e.currentTarget.style.background = COLORS.hover; e.currentTarget.style.borderColor = COLORS.border }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent' }}
+    >{children}</button>
+  )
 }
 function VSep() { return <div style={{ width: 1, height: 16, background: COLORS.border, margin: '0 2px', flexShrink: 0 }} /> }
 

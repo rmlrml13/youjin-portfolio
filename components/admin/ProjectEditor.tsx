@@ -4,7 +4,11 @@ import { useState, useRef, useEffect } from 'react'
 import type { Project, ProjectBlock } from '@/lib/types'
 import BlockEditorCard from '@/components/portfolio/BlockEditorCard'
 import type { BlockEditorHandle } from '@/components/portfolio/BlockEditorCard'
+import BlockEditorLegacy from '@/components/portfolio/BlockEditorLegacy'
 import { s, COLORS, fmtDate } from './adminStyles'
+
+type EditorMode = 'card' | 'legacy'
+const EDITOR_MODE_KEY = 'youjin_editor_mode'
 
 interface ProjectForm { title: string; tag: string }
 
@@ -32,9 +36,21 @@ export default function ProjectEditor({ selectedProject, isCreating, token, proj
   const [savedProject, setSavedProject] = useState<Project | null>(selectedProject)
   const [previewOpen,  setPreviewOpen]  = useState(false)
   const [liveBlocks,   setLiveBlocks]   = useState<ProjectBlock[]>([])
+  const [editorMode,   setEditorMode]   = useState<EditorMode>('card')
 
   const fileInputRef   = useRef<HTMLInputElement>(null)
   const blockEditorRef = useRef<BlockEditorHandle>(null)
+
+  // localStorage에서 에디터 모드 복원
+  useEffect(() => {
+    const saved = localStorage.getItem(EDITOR_MODE_KEY) as EditorMode | null
+    if (saved === 'card' || saved === 'legacy') setEditorMode(saved)
+  }, [])
+
+  function switchEditorMode(mode: EditorMode) {
+    setEditorMode(mode)
+    localStorage.setItem(EDITOR_MODE_KEY, mode)
+  }
 
   const showEmpty    = !selectedProject && !isCreating
   const blockTarget  = savedProject ?? selectedProject
@@ -274,14 +290,52 @@ export default function ProjectEditor({ selectedProject, isCreating, token, proj
 
             {/* 콘텐츠 블록 */}
             <div>
-              <SectionLabel>콘텐츠</SectionLabel>
+              {/* 콘텐츠 헤더: 라벨 + 에디터 토글 */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.6rem' }}>
+                <SectionLabel>콘텐츠</SectionLabel>
+                {blockTarget && (
+                  <div style={{ display: 'flex', gap: 0, border: `1px solid ${COLORS.border}`, borderRadius: 3, overflow: 'hidden', flexShrink: 0 }}>
+                    {([['card', '카드형'], ['legacy', '일반형']] as [EditorMode, string][]).map(([mode, label]) => (
+                      <button
+                        key={mode}
+                        onClick={() => switchEditorMode(mode)}
+                        style={{
+                          padding: '0.28rem 0.85rem',
+                          background: editorMode === mode ? COLORS.ink : 'transparent',
+                          color: editorMode === mode ? '#fff' : COLORS.inkFaint,
+                          border: 'none',
+                          borderRight: mode === 'card' ? `1px solid ${COLORS.border}` : 'none',
+                          fontFamily: 'DM Mono, monospace',
+                          fontSize: '9px',
+                          letterSpacing: '0.08em',
+                          textTransform: 'uppercase',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s',
+                        }}
+                      >{label}</button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {blockTarget ? (
-                <BlockEditorCard
-                  ref={blockEditorRef}
-                  projectId={blockTarget.id}
-                  token={token}
-                  onBlocksChange={setLiveBlocks}
-                />
+                editorMode === 'card' ? (
+                  <BlockEditorCard
+                    key={`card-${blockTarget.id}`}
+                    ref={blockEditorRef}
+                    projectId={blockTarget.id}
+                    token={token}
+                    onBlocksChange={setLiveBlocks}
+                  />
+                ) : (
+                  <BlockEditorLegacy
+                    key={`legacy-${blockTarget.id}`}
+                    ref={blockEditorRef}
+                    projectId={blockTarget.id}
+                    token={token}
+                    onBlocksChange={setLiveBlocks}
+                  />
+                )
               ) : (
                 <div style={{
                   border: `2px dashed ${COLORS.border}`, borderRadius: 4,

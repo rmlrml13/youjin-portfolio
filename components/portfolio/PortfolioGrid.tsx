@@ -98,7 +98,7 @@ const PortfolioGrid = forwardRef<PortfolioGridHandle, Props>(function PortfolioG
           editMode ? (
             <div
               key={p.id}
-              className={`work-item ${p.col_size} visible`}
+              className="work-item visible"
               onClick={() => dispatchEdit(p)}
               style={{ cursor:'pointer' }}
             >
@@ -118,7 +118,7 @@ const PortfolioGrid = forwardRef<PortfolioGridHandle, Props>(function PortfolioG
             <Link
               key={p.id}
               href={`/portfolio/${p.id}`}
-              className={`work-item ${p.col_size}`}
+              className="work-item"
               style={{ textDecoration:'none' }}
             >
               <div className="work-thumb" style={{ position:'relative' }}>
